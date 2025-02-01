@@ -66,6 +66,14 @@ func Mux2Way(sel, a, b uint8) uint8 {
 	return Or(And(Not(sel), a), And(sel, b))
 }
 
+// Demux2Way provides the opposite function of Mux2Way, that is, it accepts a selection and an input
+// signal and produces two values, one of which will always be 0 and the other will take the value of
+// input. When `sel` is unset then the first output is given the value of `in`, and when `sel` is set then
+// the second output is given the value of `in`.
+func Demux2Way(sel, in uint8) (uint8, uint8) {
+	return And(in, Not(sel)), And(in, sel)
+}
+
 func splitUint16(n uint16) (msb uint8, lsb uint8) {
 	msb = uint8(n >> 8)
 	lsb = uint8(n)
