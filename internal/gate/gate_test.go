@@ -230,6 +230,42 @@ func TestAnd(t *testing.T) {
 	}
 }
 
+func TestAndUint16(t *testing.T) {
+	type assertion struct {
+		a uint16
+		b uint16
+		r uint16
+	}
+	var assertions = []assertion{
+		{
+			a: 0,
+			b: 0,
+			r: 0,
+		},
+		{
+			a: 0xFFFF,
+			b: 0,
+			r: 0,
+		},
+		{
+			a: 0xF0F0,
+			b: 0xF000,
+			r: 0xF000,
+		},
+		{
+			a: 0xFFFF,
+			b: 0xFFFF,
+			r: 0xFFFF,
+		},
+	}
+	for _, assertion := range assertions {
+		r := AndUint16(assertion.a, assertion.b)
+		if assertion.r != r {
+			t.Errorf("expected %v with a: %v and b: %v but got %v", r, assertion.r, assertion.a, assertion.b)
+		}
+	}
+}
+
 func TestOr(t *testing.T) {
 	type assertion struct {
 		a uint8
@@ -283,6 +319,42 @@ func TestOr(t *testing.T) {
 	}
 }
 
+func TestOrUint16(t *testing.T) {
+	type assertion struct {
+		a uint16
+		b uint16
+		r uint16
+	}
+	var assertions = []assertion{
+		{
+			a: 0,
+			b: 0,
+			r: 0,
+		},
+		{
+			a: 0xFFFF,
+			b: 0,
+			r: 0xFFFF,
+		},
+		{
+			a: 0x0F0F,
+			b: 0xFFFF,
+			r: 0xFFFF,
+		},
+		{
+			a: 0xF000,
+			b: 0xF00F,
+			r: 0xF00F,
+		},
+	}
+	for _, a := range assertions {
+		r := OrUint16(a.a, a.b)
+		if a.r != r {
+			t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+		}
+	}
+}
+
 func TestXor(t *testing.T) {
 	type assertion struct {
 		a uint8
@@ -333,5 +405,36 @@ func TestXor(t *testing.T) {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
 			}
 		})
+	}
+}
+
+func TestXorUint16(t *testing.T) {
+	type assertion struct {
+		a uint16
+		b uint16
+		r uint16
+	}
+	var assertions = []assertion{
+		{
+			a: 0xFFFF,
+			b: 0xFFFF,
+			r: 0,
+		},
+		{
+			a: 0xF0F0,
+			b: 0x0F0F,
+			r: 0xFFFF,
+		},
+		{
+			a: 0xF0F0,
+			b: 0xF0F0,
+			r: 0,
+		},
+	}
+	for _, a := range assertions {
+		r := XorUint16(a.a, a.b)
+		if a.r != r {
+			t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+		}
 	}
 }

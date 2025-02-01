@@ -31,12 +31,30 @@ func And(a, b uint8) uint8 {
 	return NotAnd(Not(a), Not(b))
 }
 
+func AndUint16(a, b uint16) uint16 {
+	am, al := splitUint16(a)
+	bm, bl := splitUint16(b)
+	return joinUint16(And(am, bm), And(al, bl))
+}
+
 func Or(a, b uint8) uint8 {
 	return Not(NotAnd(a, b))
 }
 
+func OrUint16(a, b uint16) uint16 {
+	am, al := splitUint16(a)
+	bm, bl := splitUint16(b)
+	return joinUint16(Or(am, bm), Or(al, bl))
+}
+
 func Xor(a, b uint8) uint8 {
 	return Or(And(a, Not(b)), And(Not(a), b))
+}
+
+func XorUint16(a, b uint16) uint16 {
+	am, al := splitUint16(a)
+	bm, bl := splitUint16(b)
+	return joinUint16(Xor(am, bm), Xor(al, bl))
 }
 
 func splitUint16(n uint16) (msb uint8, lsb uint8) {
