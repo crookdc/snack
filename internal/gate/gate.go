@@ -57,6 +57,15 @@ func XorUint16(a, b uint16) uint16 {
 	return joinUint16(Xor(am, bm), Xor(al, bl))
 }
 
+// Mux2Way provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports
+// only binary values (0, 1) to be passed in, otherwise the returned value is for all intents considered
+// undefined. This hard requirements is made clear by the `panic` calls made for any other type of value.
+// Given that the supplied input is correct, this multiplexer will return the value of `a` is `sel` is
+// unset (0) and the value of `b` is `sel` is set (1).
+func Mux2Way(sel, a, b uint8) uint8 {
+	return Or(And(Not(sel), a), And(sel, b))
+}
+
 func splitUint16(n uint16) (msb uint8, lsb uint8) {
 	msb = uint8(n >> 8)
 	lsb = uint8(n)

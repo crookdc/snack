@@ -444,3 +444,70 @@ func TestXorUint16(t *testing.T) {
 		})
 	}
 }
+
+func TestMux2Way(t *testing.T) {
+	type assertion struct {
+		a   uint8
+		b   uint8
+		sel uint8
+		r   uint8
+	}
+	var assertions = []assertion{
+		{
+			a:   1,
+			b:   0,
+			sel: 0,
+			r:   1,
+		},
+		{
+			a:   0,
+			b:   1,
+			sel: 0,
+			r:   0,
+		},
+		{
+			a:   1,
+			b:   1,
+			sel: 0,
+			r:   1,
+		},
+		{
+			a:   0,
+			b:   0,
+			sel: 0,
+			r:   0,
+		},
+		{
+			a:   1,
+			b:   0,
+			sel: 1,
+			r:   0,
+		},
+		{
+			a:   1,
+			b:   1,
+			sel: 1,
+			r:   1,
+		},
+		{
+			a:   0,
+			b:   1,
+			sel: 1,
+			r:   1,
+		},
+		{
+			a:   0,
+			b:   0,
+			sel: 1,
+			r:   0,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a is %v, b is %v and sel is %v", a.a, a.b, a.sel), func(t *testing.T) {
+			r := Mux2Way(a.sel, a.a, a.b)
+			if a.r != r {
+				t.Errorf("expected %v with a: %v, b: %v and sel: %v but got %v", a.r, a.a, a.b, a.sel, r)
+			}
+		})
+	}
+}
