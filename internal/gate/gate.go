@@ -63,6 +63,9 @@ func XorUint16(a, b uint16) uint16 {
 // Given that the supplied input is correct, this multiplexer will return the value of `a` is `sel` is
 // unset (0) and the value of `b` is `sel` is set (1).
 func Mux2Way(sel, a, b uint8) uint8 {
+	if !binary(sel) || !binary(a) || !binary(b) {
+		panic("passed non-binary input signal to binary multiplexer")
+	}
 	return Or(And(Not(sel), a), And(sel, b))
 }
 
@@ -71,7 +74,14 @@ func Mux2Way(sel, a, b uint8) uint8 {
 // input. When `sel` is unset then the first output is given the value of `in`, and when `sel` is set then
 // the second output is given the value of `in`.
 func Demux2Way(sel, in uint8) (uint8, uint8) {
+	if !binary(sel) || !binary(sel) {
+		panic("passed non-binary input signal to binary multiplexer")
+	}
 	return And(in, Not(sel)), And(in, sel)
+}
+
+func binary(n uint8) bool {
+	return n == 0 || n == 1
 }
 
 func splitUint16(n uint16) (msb uint8, lsb uint8) {
