@@ -258,11 +258,13 @@ func TestAndUint16(t *testing.T) {
 			r: 0xFFFF,
 		},
 	}
-	for _, assertion := range assertions {
-		r := AndUint16(assertion.a, assertion.b)
-		if assertion.r != r {
-			t.Errorf("expected %v with a: %v and b: %v but got %v", r, assertion.r, assertion.a, assertion.b)
-		}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
+			r := AndUint16(a.a, a.b)
+			if a.r != r {
+				t.Errorf("expected %v with a: %v and b: %v but got %v", r, a.r, a.a, a.b)
+			}
+		})
 	}
 }
 
@@ -348,10 +350,12 @@ func TestOrUint16(t *testing.T) {
 		},
 	}
 	for _, a := range assertions {
-		r := OrUint16(a.a, a.b)
-		if a.r != r {
-			t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
-		}
+		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
+			r := OrUint16(a.a, a.b)
+			if a.r != r {
+				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+			}
+		})
 	}
 }
 
@@ -432,9 +436,11 @@ func TestXorUint16(t *testing.T) {
 		},
 	}
 	for _, a := range assertions {
-		r := XorUint16(a.a, a.b)
-		if a.r != r {
-			t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
-		}
+		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
+			r := XorUint16(a.a, a.b)
+			if a.r != r {
+				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+			}
+		})
 	}
 }
