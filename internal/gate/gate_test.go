@@ -694,3 +694,49 @@ func TestMux8Way(t *testing.T) {
 		})
 	}
 }
+
+func TestDemux2Way(t *testing.T) {
+	type assertion struct {
+		in uint16
+		s  uint8
+		a  uint16
+		b  uint16
+	}
+	var assertions = []assertion{
+		{
+			in: 0,
+			s:  0,
+			a:  0,
+			b:  0,
+		},
+		{
+			in: 65_535,
+			s:  0,
+			a:  65_535,
+			b:  0,
+		},
+		{
+			in: 256,
+			s:  1,
+			a:  0,
+			b:  256,
+		},
+		{
+			in: 0,
+			s:  1,
+			a:  0,
+			b:  0,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given in is %v and s is %v", a.in, a.s), func(t *testing.T) {
+			ar, br := Demux2Way(a.s, a.in)
+			if ar != a.a {
+				t.Errorf("expected ar %v but got %v", a.a, ar)
+			}
+			if br != a.b {
+				t.Errorf("expected br %v but got %v", a.b, br)
+			}
+		})
+	}
+}
