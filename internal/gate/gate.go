@@ -57,7 +57,7 @@ func XorUint16(a, b uint16) uint16 {
 	return joinUint16(Xor(am, bm), Xor(al, bl))
 }
 
-// Mux2Way16 provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports
+// Mux2Way provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports
 // only binary values (0, 1) to be passed in as selector, any non-zero value is considered set (0xFF) and
 // only zero is considered unset (0x00). The multiplexer will return the value of `a` if `s` is unset (0)
 // and the value of `b` is `s` is set (> 0).
