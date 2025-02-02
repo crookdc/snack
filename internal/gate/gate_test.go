@@ -447,29 +447,29 @@ func TestXorUint16(t *testing.T) {
 
 func TestMux2Way(t *testing.T) {
 	type assertion struct {
-		a   uint8
-		b   uint8
+		a   uint16
+		b   uint16
 		sel uint8
-		r   uint8
+		r   uint16
 	}
 	var assertions = []assertion{
 		{
-			a:   1,
-			b:   0,
+			a:   55,
+			b:   96,
 			sel: 0,
-			r:   1,
+			r:   55,
 		},
 		{
 			a:   0,
-			b:   1,
+			b:   53,
 			sel: 0,
 			r:   0,
 		},
 		{
-			a:   1,
-			b:   1,
+			a:   255,
+			b:   12,
 			sel: 0,
-			r:   1,
+			r:   255,
 		},
 		{
 			a:   0,
@@ -478,22 +478,22 @@ func TestMux2Way(t *testing.T) {
 			r:   0,
 		},
 		{
-			a:   1,
+			a:   12,
 			b:   0,
 			sel: 1,
 			r:   0,
 		},
 		{
-			a:   1,
-			b:   1,
+			a:   123,
+			b:   99,
 			sel: 1,
-			r:   1,
+			r:   99,
 		},
 		{
 			a:   0,
-			b:   1,
+			b:   123,
 			sel: 1,
-			r:   1,
+			r:   123,
 		},
 		{
 			a:   0,
@@ -512,47 +512,184 @@ func TestMux2Way(t *testing.T) {
 	}
 }
 
-func TestDemux2Way(t *testing.T) {
+func TestMux4Way16(t *testing.T) {
 	type assertion struct {
-		in  uint8
-		sel uint8
-		a   uint8
-		b   uint8
+		a uint16
+		b uint16
+		c uint16
+		d uint16
+		s [2]uint8
+		r uint16
 	}
 	var assertions = []assertion{
 		{
-			in:  0,
-			sel: 0,
-			a:   0,
-			b:   0,
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			s: [2]uint8{0, 0},
+			r: 10,
 		},
 		{
-			in:  0,
-			sel: 1,
-			a:   0,
-			b:   0,
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			s: [2]uint8{0, 1},
+			r: 20,
 		},
 		{
-			in:  1,
-			sel: 0,
-			a:   1,
-			b:   0,
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			s: [2]uint8{1, 0},
+			r: 30,
 		},
 		{
-			in:  1,
-			sel: 1,
-			a:   0,
-			b:   1,
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			s: [2]uint8{1, 1},
+			r: 40,
 		},
 	}
 	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given in is %v and sel is %v", a.in, a.sel), func(t *testing.T) {
-			ra, rb := Demux2Way(a.sel, a.in)
-			if a.a != ra {
-				t.Errorf("expected %v with in: %v and sel: %v but got %v", a.a, a.in, a.sel, ra)
+		t.Run(fmt.Sprintf("given s: %v", a.s), func(t *testing.T) {
+			r := Mux4Way(a.s, a.a, a.b, a.c, a.d)
+			if a.r != r {
+				t.Errorf("expected %v given s: %v but got %v", a.r, a.s, r)
 			}
-			if a.b != rb {
-				t.Errorf("expected %v with in: %v and sel: %v but got %v", a.b, a.in, a.sel, rb)
+		})
+	}
+}
+
+func TestMux8Way(t *testing.T) {
+	type assertion struct {
+		a uint16
+		b uint16
+		c uint16
+		d uint16
+		e uint16
+		f uint16
+		g uint16
+		h uint16
+
+		s [3]uint8
+		r uint16
+	}
+	var assertions = []assertion{
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{0, 0, 0},
+			r: 10,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{0, 0, 1},
+			r: 20,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{0, 1, 0},
+			r: 30,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{0, 1, 1},
+			r: 40,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{1, 0, 0},
+			r: 50,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{1, 0, 1},
+			r: 60,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{1, 1, 0},
+			r: 70,
+		},
+		{
+			a: 10,
+			b: 20,
+			c: 30,
+			d: 40,
+			e: 50,
+			f: 60,
+			g: 70,
+			h: 80,
+
+			s: [3]uint8{1, 1, 1},
+			r: 80,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("with s: %v", a.s), func(t *testing.T) {
+			r := Mux8Way(a.s, a.a, a.b, a.c, a.d, a.e, a.f, a.g, a.h)
+			if a.r != r {
+				t.Errorf("expected %v with s: %v got got %v", a.r, a.s, r)
 			}
 		})
 	}
