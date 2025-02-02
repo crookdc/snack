@@ -740,3 +740,65 @@ func TestDemux2Way(t *testing.T) {
 		})
 	}
 }
+
+func TestDemux4Way(t *testing.T) {
+	type assertion struct {
+		in uint16
+		s  [2]uint8
+		a  uint16
+		b  uint16
+		c  uint16
+		d  uint16
+	}
+	var assertions = []assertion{
+		{
+			in: 65_313,
+			s:  [2]uint8{0, 0},
+			a:  65_313,
+			b:  0,
+			c:  0,
+			d:  0,
+		},
+		{
+			in: 23_230,
+			s:  [2]uint8{0, 1},
+			a:  0,
+			b:  23_230,
+			c:  0,
+			d:  0,
+		},
+		{
+			in: 9012,
+			s:  [2]uint8{1, 0},
+			a:  0,
+			b:  0,
+			c:  9012,
+			d:  0,
+		},
+		{
+			in: 1234,
+			s:  [2]uint8{1, 1},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  1234,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
+			ar, br, cr, dr := Demux4Way(a.s, a.in)
+			if a.a != ar {
+				t.Errorf("expected a %v but got %v", a.a, ar)
+			}
+			if a.b != br {
+				t.Errorf("expected b %v but got %v", a.b, br)
+			}
+			if a.c != cr {
+				t.Errorf("expected c %v but got %v", a.c, cr)
+			}
+			if a.d != dr {
+				t.Errorf("expected d %v but got %v", a.d, dr)
+			}
+		})
+	}
+}

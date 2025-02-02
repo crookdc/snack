@@ -82,13 +82,29 @@ func Mux8Way(s [3]uint8, a, b, c, d, e, f, g, h uint16) uint16 {
 	return Mux2Way(s[0], abcd, efgh)
 }
 
-// Demux2Way provides a demultiplexer for 2 inputs and a binary selector represented by a single byte.
+// Demux2Way provides a demultiplexer for an uint16 and a binary selector represented by a single byte.
 // Non-zero values on the selector byte is considered set, and only a value of zero is considered unset.
 func Demux2Way(s uint8, in uint16) (a uint16, b uint16) {
 	s = selector(s)
 	a = AndUint16(NotUint16(uint16(s)|uint16(s)<<8), in)
 	b = AndUint16(uint16(s)|uint16(s)<<8, in)
 	return a, b
+}
+
+// Demux4Way provides a demultiplexer for 4 outputs based on a 2-byte selector.
+func Demux4Way(s [2]uint8, in uint16) (a uint16, b uint16, c uint16, d uint16) {
+	sh := expand(selector(s[0]))
+	a, b = Demux2Way(s[1], in)
+	a = AndUint16(NotUint16(sh), a)
+	b = AndUint16(NotUint16(sh), b)
+	c, d = Demux2Way(s[1], in)
+	c = AndUint16(sh, c)
+	d = AndUint16(sh, d)
+	return a, b, c, d
+}
+
+func expand(n uint8) uint16 {
+	return uint16(n) | uint16(n)<<8
 }
 
 func selector(n uint8) uint8 {
