@@ -512,7 +512,7 @@ func TestMux2Way(t *testing.T) {
 	}
 }
 
-func TestMux4Way16(t *testing.T) {
+func TestMux4Way(t *testing.T) {
 	type assertion struct {
 		a uint16
 		b uint16
