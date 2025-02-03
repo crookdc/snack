@@ -1,4 +1,4 @@
-package adder
+package alu
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestHalf(t *testing.T) {
+func TestHalfAdder(t *testing.T) {
 	type assertion struct {
 		a     snack.Bit
 		b     snack.Bit
@@ -42,7 +42,7 @@ func TestHalf(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a: %v and b: %v", a.a, a.b), func(t *testing.T) {
-			carry, sum := Half(a.a, a.b)
+			carry, sum := HalfAdder(a.a, a.b)
 			if carry != a.carry {
 				t.Errorf("expected carry %v but got %v", a.carry, carry)
 			}
