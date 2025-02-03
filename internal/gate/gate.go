@@ -2,6 +2,10 @@
 // uint16 parameters respectively. All gates are built on top of the NotAnd gate.
 package gate
 
+import (
+	"github.com/crookdc/snack"
+)
+
 func NotAnd(a, b uint8) uint8 {
 	res := uint8(0)
 	for i := range 8 {
@@ -37,6 +41,10 @@ func AndUint16(a, b uint16) uint16 {
 	return joinUint16(And(am, bm), And(al, bl))
 }
 
+func AndBit(a, b snack.Bit) snack.Bit {
+	return snack.NewBit(And(a.Bin(), b.Bin()))
+}
+
 func Or(a, b uint8) uint8 {
 	return Not(NotAnd(a, b))
 }
@@ -55,6 +63,10 @@ func XorUint16(a, b uint16) uint16 {
 	am, al := splitUint16(a)
 	bm, bl := splitUint16(b)
 	return joinUint16(Xor(am, bm), Xor(al, bl))
+}
+
+func XorBit(a, b snack.Bit) snack.Bit {
+	return snack.NewBit(Xor(a.Bin(), b.Bin()))
 }
 
 // Mux2Way provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports

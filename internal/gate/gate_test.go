@@ -2,6 +2,7 @@ package gate
 
 import (
 	"fmt"
+	"github.com/crookdc/snack"
 	"testing"
 )
 
@@ -268,6 +269,44 @@ func TestAndUint16(t *testing.T) {
 	}
 }
 
+func TestAndBit(t *testing.T) {
+	type assertion struct {
+		a snack.Bit
+		b snack.Bit
+		r snack.Bit
+	}
+	var assertions = []assertion{
+		{
+			a: snack.UnsetBit(),
+			b: snack.UnsetBit(),
+			r: snack.UnsetBit(),
+		},
+		{
+			a: snack.UnsetBit(),
+			b: snack.SetBit(),
+			r: snack.UnsetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.UnsetBit(),
+			r: snack.UnsetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.SetBit(),
+			r: snack.SetBit(),
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a: %v and b: %v", a.a, a.b), func(*testing.T) {
+			r := AndBit(a.a, a.b)
+			if r != a.r {
+				t.Errorf("expected %v but got %v", a.r, r)
+			}
+		})
+	}
+}
+
 func TestOr(t *testing.T) {
 	type assertion struct {
 		a uint8
@@ -440,6 +479,44 @@ func TestXorUint16(t *testing.T) {
 			r := XorUint16(a.a, a.b)
 			if a.r != r {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+			}
+		})
+	}
+}
+
+func TestXorBit(t *testing.T) {
+	type assertion struct {
+		a snack.Bit
+		b snack.Bit
+		r snack.Bit
+	}
+	var assertions = []assertion{
+		{
+			a: snack.UnsetBit(),
+			b: snack.UnsetBit(),
+			r: snack.UnsetBit(),
+		},
+		{
+			a: snack.UnsetBit(),
+			b: snack.SetBit(),
+			r: snack.SetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.UnsetBit(),
+			r: snack.SetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.SetBit(),
+			r: snack.UnsetBit(),
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a: %v and b: %v", a.a, a.b), func(t *testing.T) {
+			r := XorBit(a.a, a.b)
+			if r != a.r {
+				t.Errorf("expected %v but got %v", a.r, r)
 			}
 		})
 	}
