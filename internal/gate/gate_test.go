@@ -802,3 +802,145 @@ func TestDemux4Way(t *testing.T) {
 		})
 	}
 }
+
+func TestDemux8Way(t *testing.T) {
+	type assertion struct {
+		in uint16
+		s  [3]uint8
+		a  uint16
+		b  uint16
+		c  uint16
+		d  uint16
+		e  uint16
+		f  uint16
+		g  uint16
+		h  uint16
+	}
+	var assertions = []assertion{
+		{
+			in: 65_313,
+			s:  [3]uint8{0, 0, 0},
+			a:  65_313,
+			b:  0,
+			c:  0,
+			d:  0,
+			e:  0,
+			f:  0,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 56_555,
+			s:  [3]uint8{0, 0, 1},
+			a:  0,
+			b:  56_555,
+			c:  0,
+			d:  0,
+			e:  0,
+			f:  0,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 1234,
+			s:  [3]uint8{0, 1, 0},
+			a:  0,
+			b:  0,
+			c:  1234,
+			d:  0,
+			e:  0,
+			f:  0,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 9999,
+			s:  [3]uint8{0, 1, 1},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  9999,
+			e:  0,
+			f:  0,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 8989,
+			s:  [3]uint8{1, 0, 0},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  0,
+			e:  8989,
+			f:  0,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 13372,
+			s:  [3]uint8{1, 0, 1},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  0,
+			e:  0,
+			f:  13372,
+			g:  0,
+			h:  0,
+		},
+		{
+			in: 12341,
+			s:  [3]uint8{1, 1, 0},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  0,
+			e:  0,
+			f:  0,
+			g:  12341,
+			h:  0,
+		},
+		{
+			in: 4455,
+			s:  [3]uint8{1, 1, 1},
+			a:  0,
+			b:  0,
+			c:  0,
+			d:  0,
+			e:  0,
+			f:  0,
+			g:  0,
+			h:  4455,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
+			ar, br, cr, dr, er, fr, gr, hr := Demux8Way(a.s, a.in)
+			if ar != a.a {
+				t.Errorf("expected a %v but got %v", a.a, ar)
+			}
+			if br != a.b {
+				t.Errorf("expected b %v but got %v", a.b, br)
+			}
+			if cr != a.c {
+				t.Errorf("expected c %v but got %v", a.c, cr)
+			}
+			if dr != a.d {
+				t.Errorf("expected d %v but got %v", a.d, dr)
+			}
+			if er != a.e {
+				t.Errorf("expected e %v but got %v", a.e, er)
+			}
+			if fr != a.f {
+				t.Errorf("expected f %v but got %v", a.f, fr)
+			}
+			if gr != a.g {
+				t.Errorf("expected g %v but got %v", a.g, gr)
+			}
+			if hr != a.h {
+				t.Errorf("expected h %v but got %v", a.h, hr)
+			}
+		})
+	}
+}

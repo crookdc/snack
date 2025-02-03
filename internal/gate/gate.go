@@ -103,6 +103,22 @@ func Demux4Way(s [2]uint8, in uint16) (a uint16, b uint16, c uint16, d uint16) {
 	return a, b, c, d
 }
 
+// Demux8Way provides a demultiplexer for 8 outputs based on a 3-byte selector.
+func Demux8Way(s [3]uint8, in uint16) (a, b, c, d, e, f, g, h uint16) {
+	sh := expand(selector(s[0]))
+	a, b, c, d = Demux4Way([2]uint8{s[1], s[2]}, in)
+	a = AndUint16(NotUint16(sh), a)
+	b = AndUint16(NotUint16(sh), b)
+	c = AndUint16(NotUint16(sh), c)
+	d = AndUint16(NotUint16(sh), d)
+	e, f, g, h = Demux4Way([2]uint8{s[1], s[2]}, in)
+	e = AndUint16(sh, e)
+	f = AndUint16(sh, f)
+	g = AndUint16(sh, g)
+	h = AndUint16(sh, h)
+	return a, b, c, d, e, f, g, h
+}
+
 func expand(n uint8) uint16 {
 	return uint16(n) | uint16(n)<<8
 }
