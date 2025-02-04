@@ -55,6 +55,10 @@ func OrUint16(a, b uint16) uint16 {
 	return joinUint16(Or(am, bm), Or(al, bl))
 }
 
+func OrBit(a, b snack.Bit) snack.Bit {
+	return snack.NewBit(Or(a.Bin(), b.Bin()))
+}
+
 func Xor(a, b uint8) uint8 {
 	return Or(And(a, Not(b)), And(Not(a), b))
 }

@@ -398,6 +398,44 @@ func TestOrUint16(t *testing.T) {
 	}
 }
 
+func TestOrBit(t *testing.T) {
+	type assertion struct {
+		a snack.Bit
+		b snack.Bit
+		r snack.Bit
+	}
+	var assertions = []assertion{
+		{
+			a: snack.UnsetBit(),
+			b: snack.UnsetBit(),
+			r: snack.UnsetBit(),
+		},
+		{
+			a: snack.UnsetBit(),
+			b: snack.SetBit(),
+			r: snack.SetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.UnsetBit(),
+			r: snack.SetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			b: snack.SetBit(),
+			r: snack.SetBit(),
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a: %v, b: %v", a.a, a.b), func(t *testing.T) {
+			r := OrBit(a.a, a.b)
+			if r != a.r {
+				t.Errorf("expected %v but got %v", a.r, r)
+			}
+		})
+	}
+}
+
 func TestXor(t *testing.T) {
 	type assertion struct {
 		a uint8
