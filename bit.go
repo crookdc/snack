@@ -6,6 +6,29 @@ type Bit struct {
 	n uint8
 }
 
+// BitSplit16 transforms a 16-bit integer to its bit representation in the Bit abstraction. The index of the slice is
+// the position of the bit, meaning that in the 0th index you will find the 2^0 position bit, and on the 15th index you
+// will find the 2^15 positioned bit.
+func BitSplit16(n uint16) []Bit {
+	res := make([]Bit, 16)
+	for i := range 16 {
+		res[i] = NewBit(uint8(n>>(15-i)) & 1)
+	}
+	return res
+}
+
+// BitJoin16 transforms a Bit slice of length 16 to a 16-bit integer
+func BitJoin16(n []Bit) uint16 {
+	if len(n) != 16 {
+		panic(fmt.Errorf("invalid bit join length %d", len(n)))
+	}
+	res := uint16(0)
+	for i := range 16 {
+		res = res | (uint16(n[i].Bin()) << (15 - i))
+	}
+	return res
+}
+
 func NewBit(n uint8) Bit {
 	if n == 0 {
 		return UnsetBit()

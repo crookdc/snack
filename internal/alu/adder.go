@@ -18,3 +18,17 @@ func FullAdder(a, b, c snack.Bit) (carry snack.Bit, sum snack.Bit) {
 	bc, sum := HalfAdder(sum, c)
 	return gate.OrBit(ac, bc), sum
 }
+
+// Adder16 adds two 16-bit integers and returns the result. The carry bit is ignored by the adder.
+func Adder16(a, b uint16) uint16 {
+	ab := snack.BitSplit16(a)
+	bb := snack.BitSplit16(b)
+
+	r := make([]snack.Bit, 16)
+	c, s := snack.UnsetBit(), snack.UnsetBit()
+	for i := range 16 {
+		c, s = FullAdder(ab[15-i], bb[15-i], c)
+		r[15-i] = s
+	}
+	return snack.BitJoin16(r)
+}

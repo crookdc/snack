@@ -131,3 +131,49 @@ func TestFullAdder(t *testing.T) {
 		})
 	}
 }
+
+func TestAdder16(t *testing.T) {
+	type assertion struct {
+		a uint16
+		b uint16
+		r uint16
+	}
+	var assertions = []assertion{
+		{
+			a: 0,
+			b: 0,
+			r: 0,
+		},
+		{
+			a: 256,
+			b: 0,
+			r: 256,
+		},
+		{
+			a: 0,
+			b: 256,
+			r: 256,
+		},
+		{
+			a: 256,
+			b: 256,
+			r: 512,
+		},
+		{
+			a: 10000,
+			b: 10000,
+			r: 20000,
+		},
+		{
+			a: 65535,
+			b: 2,
+			r: 1,
+		},
+	}
+	for _, a := range assertions {
+		r := Adder16(a.a, a.b)
+		if r != a.r {
+			t.Errorf("expected %v but got %v", a.r, r)
+		}
+	}
+}
