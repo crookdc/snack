@@ -178,6 +178,31 @@ func TestNotUint16(t *testing.T) {
 	}
 }
 
+func TestNotBit(t *testing.T) {
+	type assertion struct {
+		a snack.Bit
+		r snack.Bit
+	}
+	var assertions = []assertion{
+		{
+			a: snack.UnsetBit(),
+			r: snack.SetBit(),
+		},
+		{
+			a: snack.SetBit(),
+			r: snack.UnsetBit(),
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given a: %v", a.a), func(t *testing.T) {
+			r := NotBit(a.a)
+			if r != a.r {
+				t.Errorf("expected %v but got %v", a.r, r)
+			}
+		})
+	}
+}
+
 func TestAnd(t *testing.T) {
 	type assertion struct {
 		a uint8

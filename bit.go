@@ -29,6 +29,16 @@ func BitJoin16(n []Bit) uint16 {
 	return res
 }
 
+// Expand16 takes a single bit and expands its value to cover 16 bits. That is, if the bit value is 0 then a 16-bit
+// unsigned integer containing all zeroes is returned. If the input bit value is 1 then an unsigned 16-bit integer
+// containing all ones is returned.
+func Expand16(n Bit) uint16 {
+	if n.IsSet() {
+		return 0xFFFF
+	}
+	return 0
+}
+
 func NewBit(n uint8) Bit {
 	if n == 0 {
 		return UnsetBit()

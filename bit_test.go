@@ -137,3 +137,27 @@ func TestBitJoin16(t *testing.T) {
 		}
 	}
 }
+
+func TestExpand16(t *testing.T) {
+	var assertions = []struct {
+		n Bit
+		r uint16
+	}{
+		{
+			n: SetBit(),
+			r: 0xFFFF,
+		},
+		{
+			n: UnsetBit(),
+			r: 0,
+		},
+	}
+	for _, a := range assertions {
+		t.Run(fmt.Sprintf("given n %v", a.n), func(t *testing.T) {
+			r := Expand16(a.n)
+			if r != a.r {
+				t.Errorf("expected %v but got %v", a.r, r)
+			}
+		})
+	}
+}

@@ -31,6 +31,10 @@ func NotUint16(a uint16) uint16 {
 	return joinUint16(Not(msb), Not(lsb))
 }
 
+func NotBit(a snack.Bit) snack.Bit {
+	return snack.NewBit(Not(a.Bin()) & 1)
+}
+
 func And(a, b uint8) uint8 {
 	return NotAnd(Not(a), Not(b))
 }
