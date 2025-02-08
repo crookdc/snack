@@ -8,17 +8,17 @@ import (
 // ALU (Arithmetic Logic Unit) represents an actual hardware chip that can handle an array of arithmetic operations
 // which are executed on two 16-bit unsigned integers and which produces a single 16-bit unsigned integer as result.
 type ALU struct {
-	// When set, sets the x input to 0
+	// ZX sets all bits of x to 0
 	ZX snack.Bit
-	// When set, flips all bits of x
+	// NX negates all bits of x
 	NX snack.Bit
-	// When set, sets the y input to 0
+	// ZY sets all bits of y to 0
 	ZY snack.Bit
-	// When set, flips all bits of y
+	// NY negates all bits of y
 	NY snack.Bit
-	// When set, operation is bitwise AND, otherwise addition
+	// F when set causes ALU operator to be a bitwise AND, otherwise operator is addition
 	F snack.Bit
-	// When set, flips all bits of output
+	// NO negates all bits of output
 	NO snack.Bit
 }
 
