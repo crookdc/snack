@@ -1088,19 +1088,27 @@ func TestDemux8Way(t *testing.T) {
 func TestDFF(t *testing.T) {
 	dff := NewDFF()
 	dff.Set(snack.SetBit())
-	if dff.IsSet() {
+	if bit := dff.Get(); bit.IsSet() {
 		t.Errorf("expected dff to be unset before tick")
 	}
 	dff.Flip()
-	if !dff.IsSet() {
+	if bit := dff.Get(); !bit.IsSet() {
 		t.Errorf("expected dff to be set after tick")
 	}
 	dff.Set(snack.UnsetBit())
-	if !dff.IsSet() {
+	if bit := dff.Get(); !bit.IsSet() {
 		t.Errorf("expected dff to be set before tick")
 	}
 	dff.Flip()
-	if dff.IsSet() {
+	if bit := dff.Get(); bit.IsSet() {
+		t.Errorf("expected dff to be unset after tick")
+	}
+	dff.Flip()
+	if bit := dff.Get(); bit.IsSet() {
+		t.Errorf("expected dff to be unset after tick")
+	}
+	dff.Flip()
+	if bit := dff.Get(); bit.IsSet() {
 		t.Errorf("expected dff to be unset after tick")
 	}
 }
