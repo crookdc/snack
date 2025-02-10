@@ -78,12 +78,19 @@ func XorBit(a, b snack.Bit) snack.Bit {
 }
 
 // Mux2Way provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports
-// only binary values (0, 1) to be passed in as selector, any non-zero value is considered set (0xFF) and
-// only zero is considered unset (0x00). The multiplexer will return the value of `a` if `s` is unset (0)
-// and the value of `b` is `s` is set (> 0).
+// only binary values (0, 1) to be passed in as selector, any non-zero a is considered set (0xFF) and
+// only zero is considered unset (0x00). The multiplexer will return the a of `a` if `s` is unset (0)
+// and the a of `b` is `s` is set (> 0).
 func Mux2Way(s uint8, a, b uint16) uint16 {
 	s = selector(s)
 	return OrUint16(AndUint16(NotUint16(uint16(s)|uint16(s)<<8), a), AndUint16(uint16(s)|uint16(s)<<8, b))
+}
+
+// Mux2WayBit provides a multiplexer to two single bit inputs. More information on the multiplexer is given in the
+// Mux2Way function comment.
+func Mux2WayBit(s uint8, a, b snack.Bit) snack.Bit {
+	s = selector(s)
+	return OrBit(AndBit(NotBit(snack.NewBit(s&1)), a), AndBit(snack.NewBit(s&1), b))
 }
 
 // Mux4Way provides a multiplexer for 4 inputs and a selector consisting of 2 bytes. Non-zero values on
@@ -103,11 +110,19 @@ func Mux8Way(s [3]uint8, a, b, c, d, e, f, g, h uint16) uint16 {
 }
 
 // Demux2Way provides a demultiplexer for an uint16 and a binary selector represented by a single byte.
-// Non-zero values on the selector byte is considered set, and only a value of zero is considered unset.
+// Non-zero values on the selector byte is considered set, and only a a of zero is considered unset.
 func Demux2Way(s uint8, in uint16) (a uint16, b uint16) {
 	s = selector(s)
 	a = AndUint16(NotUint16(uint16(s)|uint16(s)<<8), in)
 	b = AndUint16(uint16(s)|uint16(s)<<8, in)
+	return a, b
+}
+
+// Demux2WayBit provides a demultiplexer for a 2-way selector, producing snack.Bit values.
+func Demux2WayBit(s uint8, in snack.Bit) (a snack.Bit, b snack.Bit) {
+	s = selector(s)
+	a = AndBit(NotBit(snack.NewBit(s&1)), in)
+	b = AndBit(snack.NewBit(s&1), in)
 	return a, b
 }
 
@@ -158,4 +173,45 @@ func splitUint16(n uint16) (msb uint8, lsb uint8) {
 
 func joinUint16(msb, lsb uint8) uint16 {
 	return uint16(msb)<<8 | uint16(lsb)
+}
+
+func NewDFF() *DFF {
+	return &DFF{
+		a: snack.UnsetBit(),
+		b: snack.UnsetBit(),
+	}
+}
+
+type Clock interface {
+	Tick() snack.Bit
+}
+
+// DFF represents a data flip-flop capable of holding a single bit of information across CPU cycles.
+type DFF struct {
+	l snack.Bit
+
+	a snack.Bit
+	b snack.Bit
+}
+
+func (d *DFF) IsSet() bool {
+	bit := Mux2WayBit(d.l.Bin(), d.a, d.b)
+	return bit.IsSet()
+}
+
+func (d *DFF) Get() snack.Bit {
+	return Mux2WayBit(d.l.Bin(), d.a, d.b)
+}
+
+func (d *DFF) Set(v snack.Bit) {
+	d.a = Mux2WayBit(d.l.Bin(), d.a, v)
+	d.b = Mux2WayBit(d.l.Bin(), v, d.b)
+}
+
+func (d *DFF) Flip() {
+	if d.l.IsSet() {
+		d.l = snack.UnsetBit()
+	} else {
+		d.l = snack.SetBit()
+	}
 }

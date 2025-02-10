@@ -1,6 +1,8 @@
 package snack
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Bit struct {
 	n uint8
