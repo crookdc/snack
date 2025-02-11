@@ -2,42 +2,41 @@ package alu
 
 import (
 	"fmt"
-	"github.com/crookdc/snack"
+	"github.com/crookdc/snack/internal/pin"
 	"testing"
 )
 
 func TestHalfAdder(t *testing.T) {
-	type assertion struct {
-		a     snack.Signal
-		b     snack.Signal
-		carry snack.Signal
-		sum   snack.Signal
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a     pin.Signal
+		b     pin.Signal
+		carry pin.Signal
+		sum   pin.Signal
+	}{
 		{
-			a:     snack.InactiveSignal(),
-			b:     snack.InactiveSignal(),
-			carry: snack.InactiveSignal(),
-			sum:   snack.InactiveSignal(),
+			a:     pin.Inactive,
+			b:     pin.Inactive,
+			carry: pin.Inactive,
+			sum:   pin.Inactive,
 		},
 		{
-			a:     snack.InactiveSignal(),
-			b:     snack.ActiveSignal(),
-			carry: snack.InactiveSignal(),
-			sum:   snack.ActiveSignal(),
+			a:     pin.Inactive,
+			b:     pin.Active,
+			carry: pin.Inactive,
+			sum:   pin.Active,
 		},
 		{
-			a:     snack.ActiveSignal(),
-			b:     snack.InactiveSignal(),
-			carry: snack.InactiveSignal(),
-			sum:   snack.ActiveSignal(),
+			a:     pin.Active,
+			b:     pin.Inactive,
+			carry: pin.Inactive,
+			sum:   pin.Active,
 		},
 
 		{
-			a:     snack.ActiveSignal(),
-			b:     snack.ActiveSignal(),
-			carry: snack.ActiveSignal(),
-			sum:   snack.InactiveSignal(),
+			a:     pin.Active,
+			b:     pin.Active,
+			carry: pin.Active,
+			sum:   pin.Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -54,72 +53,71 @@ func TestHalfAdder(t *testing.T) {
 }
 
 func TestFullAdder(t *testing.T) {
-	type assertion struct {
-		a     snack.Signal
-		b     snack.Signal
-		c     snack.Signal
-		sum   snack.Signal
-		carry snack.Signal
+	var assertions = []struct {
+		a     pin.Signal
+		b     pin.Signal
+		c     pin.Signal
+		sum   pin.Signal
+		carry pin.Signal
+	}{
+		{
+			a:     pin.Inactive,
+			b:     pin.Inactive,
+			c:     pin.Inactive,
+			sum:   pin.Inactive,
+			carry: pin.Inactive,
+		},
+		{
+			a:     pin.Inactive,
+			b:     pin.Inactive,
+			c:     pin.Active,
+			sum:   pin.Active,
+			carry: pin.Inactive,
+		},
+		{
+			a:     pin.Inactive,
+			b:     pin.Active,
+			c:     pin.Inactive,
+			sum:   pin.Active,
+			carry: pin.Inactive,
+		},
+		{
+			a:     pin.Active,
+			b:     pin.Inactive,
+			c:     pin.Inactive,
+			sum:   pin.Active,
+			carry: pin.Inactive,
+		},
+		{
+			a:     pin.Inactive,
+			b:     pin.Active,
+			c:     pin.Active,
+			sum:   pin.Inactive,
+			carry: pin.Active,
+		},
+		{
+			a:     pin.Active,
+			b:     pin.Active,
+			c:     pin.Inactive,
+			sum:   pin.Inactive,
+			carry: pin.Active,
+		},
+		{
+			a:     pin.Active,
+			b:     pin.Inactive,
+			c:     pin.Active,
+			sum:   pin.Inactive,
+			carry: pin.Active,
+		},
+		{
+			a:     pin.Active,
+			b:     pin.Active,
+			c:     pin.Active,
+			sum:   pin.Active,
+			carry: pin.Active,
+		},
 	}
-	var asssertions = []assertion{
-		{
-			a:     snack.InactiveSignal(),
-			b:     snack.InactiveSignal(),
-			c:     snack.InactiveSignal(),
-			sum:   snack.InactiveSignal(),
-			carry: snack.InactiveSignal(),
-		},
-		{
-			a:     snack.InactiveSignal(),
-			b:     snack.InactiveSignal(),
-			c:     snack.ActiveSignal(),
-			sum:   snack.ActiveSignal(),
-			carry: snack.InactiveSignal(),
-		},
-		{
-			a:     snack.InactiveSignal(),
-			b:     snack.ActiveSignal(),
-			c:     snack.InactiveSignal(),
-			sum:   snack.ActiveSignal(),
-			carry: snack.InactiveSignal(),
-		},
-		{
-			a:     snack.ActiveSignal(),
-			b:     snack.InactiveSignal(),
-			c:     snack.InactiveSignal(),
-			sum:   snack.ActiveSignal(),
-			carry: snack.InactiveSignal(),
-		},
-		{
-			a:     snack.InactiveSignal(),
-			b:     snack.ActiveSignal(),
-			c:     snack.ActiveSignal(),
-			sum:   snack.InactiveSignal(),
-			carry: snack.ActiveSignal(),
-		},
-		{
-			a:     snack.ActiveSignal(),
-			b:     snack.ActiveSignal(),
-			c:     snack.InactiveSignal(),
-			sum:   snack.InactiveSignal(),
-			carry: snack.ActiveSignal(),
-		},
-		{
-			a:     snack.ActiveSignal(),
-			b:     snack.InactiveSignal(),
-			c:     snack.ActiveSignal(),
-			sum:   snack.InactiveSignal(),
-			carry: snack.ActiveSignal(),
-		},
-		{
-			a:     snack.ActiveSignal(),
-			b:     snack.ActiveSignal(),
-			c:     snack.ActiveSignal(),
-			sum:   snack.ActiveSignal(),
-			carry: snack.ActiveSignal(),
-		},
-	}
-	for _, a := range asssertions {
+	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a: %v, b: %v, c: %v", a.a, a.b, a.c), func(t *testing.T) {
 			carry, sum := FullAdder(a.a, a.b, a.c)
 			if sum != a.sum {

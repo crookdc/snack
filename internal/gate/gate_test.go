@@ -2,51 +2,35 @@ package gate
 
 import (
 	"fmt"
-	"github.com/crookdc/snack"
+	"github.com/crookdc/snack/internal/pin"
 	"testing"
 )
 
 func TestNotAnd(t *testing.T) {
-	type assertion struct {
-		a uint8
-		b uint8
-		r uint8
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a pin.Signal
+		b pin.Signal
+		r pin.Signal
+	}{
 		{
-			a: 0x00,
-			b: 0x00,
-			r: 0xFF,
+			a: pin.Inactive,
+			b: pin.Inactive,
+			r: pin.Active,
 		},
 		{
-			a: 0xF0,
-			b: 0x0F,
-			r: 0x00,
+			a: pin.Inactive,
+			b: pin.Active,
+			r: pin.Inactive,
 		},
 		{
-			a: 0x0F,
-			b: 0xF0,
-			r: 0x00,
+			a: pin.Active,
+			b: pin.Inactive,
+			r: pin.Inactive,
 		},
 		{
-			a: 0xFF,
-			b: 0xFF,
-			r: 0x00,
-		},
-		{
-			a: 0xFF,
-			b: 0x00,
-			r: 0x00,
-		},
-		{
-			a: 0x00,
-			b: 0xFF,
-			r: 0x00,
-		},
-		{
-			a: 0b10010001,
-			b: 0x00,
-			r: 0b01101110,
+			a: pin.Active,
+			b: pin.Active,
+			r: pin.Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -113,26 +97,17 @@ func TestNotAndUint16(t *testing.T) {
 }
 
 func TestNot(t *testing.T) {
-	type assertion struct {
-		a uint8
-		r uint8
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a pin.Signal
+		r pin.Signal
+	}{
 		{
-			a: 0x00,
-			r: 0xFF,
+			a: pin.Inactive,
+			r: pin.Active,
 		},
 		{
-			a: 0xF0,
-			r: 0x0F,
-		},
-		{
-			a: 0x0F,
-			r: 0xF0,
-		},
-		{
-			a: 0xFF,
-			r: 0x00,
+			a: pin.Active,
+			r: pin.Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -178,72 +153,31 @@ func TestNotUint16(t *testing.T) {
 	}
 }
 
-func TestNotBit(t *testing.T) {
-	type assertion struct {
-		a snack.Signal
-		r snack.Signal
-	}
-	var assertions = []assertion{
-		{
-			a: snack.InactiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a: %v", a.a), func(t *testing.T) {
-			r := NotBit(a.a)
-			if r != a.r {
-				t.Errorf("expected %v but got %v", a.r, r)
-			}
-		})
-	}
-}
-
 func TestAnd(t *testing.T) {
-	type assertion struct {
-		a uint8
-		b uint8
-		r uint8
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a pin.Signal
+		b pin.Signal
+		r pin.Signal
+	}{
 		{
-			a: 0x00,
-			b: 0x00,
-			r: 0x00,
+			a: pin.Inactive,
+			b: pin.Inactive,
+			r: pin.Inactive,
 		},
 		{
-			a: 0xF0,
-			b: 0x0F,
-			r: 0x00,
+			a: pin.Inactive,
+			b: pin.Active,
+			r: pin.Inactive,
 		},
 		{
-			a: 0x0F,
-			b: 0xF0,
-			r: 0x00,
+			a: pin.Active,
+			b: pin.Inactive,
+			r: pin.Inactive,
 		},
 		{
-			a: 0xFF,
-			b: 0xFF,
-			r: 0xFF,
-		},
-		{
-			a: 0xFF,
-			b: 0x00,
-			r: 0x00,
-		},
-		{
-			a: 0x00,
-			b: 0xFF,
-			r: 0x00,
-		},
-		{
-			a: 0b10010001,
-			b: 0b11000001,
-			r: 0b10000001,
+			a: pin.Active,
+			b: pin.Active,
+			r: pin.Active,
 		},
 	}
 	for _, a := range assertions {
@@ -294,85 +228,31 @@ func TestAndUint16(t *testing.T) {
 	}
 }
 
-func TestAndBit(t *testing.T) {
-	type assertion struct {
-		a snack.Signal
-		b snack.Signal
-		r snack.Signal
-	}
-	var assertions = []assertion{
-		{
-			a: snack.InactiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-		{
-			a: snack.InactiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a: %v and b: %v", a.a, a.b), func(*testing.T) {
-			r := AndBit(a.a, a.b)
-			if r != a.r {
-				t.Errorf("expected %v but got %v", a.r, r)
-			}
-		})
-	}
-}
-
 func TestOr(t *testing.T) {
-	type assertion struct {
-		a uint8
-		b uint8
-		r uint8
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a pin.Signal
+		b pin.Signal
+		r pin.Signal
+	}{
 		{
-			a: 0x00,
-			b: 0x00,
-			r: 0x00,
+			a: pin.Inactive,
+			b: pin.Inactive,
+			r: pin.Inactive,
 		},
 		{
-			a: 0xF0,
-			b: 0x0F,
-			r: 0xFF,
+			a: pin.Inactive,
+			b: pin.Active,
+			r: pin.Active,
 		},
 		{
-			a: 0x0F,
-			b: 0xF0,
-			r: 0xFF,
+			a: pin.Active,
+			b: pin.Inactive,
+			r: pin.Active,
 		},
 		{
-			a: 0xFF,
-			b: 0xFF,
-			r: 0xFF,
-		},
-		{
-			a: 0xFF,
-			b: 0x00,
-			r: 0xFF,
-		},
-		{
-			a: 0x00,
-			b: 0xFF,
-			r: 0xFF,
-		},
-		{
-			a: 0b10010001,
-			b: 0b11000001,
-			r: 0b11010001,
+			a: pin.Active,
+			b: pin.Active,
+			r: pin.Active,
 		},
 	}
 	for _, a := range assertions {
@@ -423,85 +303,31 @@ func TestOrUint16(t *testing.T) {
 	}
 }
 
-func TestOrBit(t *testing.T) {
-	type assertion struct {
-		a snack.Signal
-		b snack.Signal
-		r snack.Signal
-	}
-	var assertions = []assertion{
-		{
-			a: snack.InactiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-		{
-			a: snack.InactiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a: %v, b: %v", a.a, a.b), func(t *testing.T) {
-			r := OrBit(a.a, a.b)
-			if r != a.r {
-				t.Errorf("expected %v but got %v", a.r, r)
-			}
-		})
-	}
-}
-
 func TestXor(t *testing.T) {
-	type assertion struct {
-		a uint8
-		b uint8
-		r uint8
-	}
-	var assertions = []assertion{
+	var assertions = []struct {
+		a pin.Signal
+		b pin.Signal
+		r pin.Signal
+	}{
 		{
-			a: 0x00,
-			b: 0x00,
-			r: 0x00,
+			a: pin.Inactive,
+			b: pin.Inactive,
+			r: pin.Inactive,
 		},
 		{
-			a: 0xF0,
-			b: 0x0F,
-			r: 0xFF,
+			a: pin.Inactive,
+			b: pin.Active,
+			r: pin.Active,
 		},
 		{
-			a: 0x0F,
-			b: 0xF0,
-			r: 0xFF,
+			a: pin.Active,
+			b: pin.Inactive,
+			r: pin.Active,
 		},
 		{
-			a: 0xFF,
-			b: 0x00,
-			r: 0xFF,
-		},
-		{
-			a: 0x00,
-			b: 0xFF,
-			r: 0xFF,
-		},
-		{
-			a: 0xFF,
-			b: 0xFF,
-			r: 0x00,
-		},
-		{
-			a: 0b10010001,
-			b: 0b11000001,
-			r: 0b01010000,
+			a: pin.Active,
+			b: pin.Active,
+			r: pin.Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -547,104 +373,65 @@ func TestXorUint16(t *testing.T) {
 	}
 }
 
-func TestXorBit(t *testing.T) {
-	type assertion struct {
-		a snack.Signal
-		b snack.Signal
-		r snack.Signal
-	}
-	var assertions = []assertion{
-		{
-			a: snack.InactiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-		{
-			a: snack.InactiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.InactiveSignal(),
-			r: snack.ActiveSignal(),
-		},
-		{
-			a: snack.ActiveSignal(),
-			b: snack.ActiveSignal(),
-			r: snack.InactiveSignal(),
-		},
-	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a: %v and b: %v", a.a, a.b), func(t *testing.T) {
-			r := XorBit(a.a, a.b)
-			if r != a.r {
-				t.Errorf("expected %v but got %v", a.r, r)
-			}
-		})
-	}
-}
-
-func TestMux2Way(t *testing.T) {
-	type assertion struct {
+func TestMux2Way16(t *testing.T) {
+	var assertions = []struct {
 		a   uint16
 		b   uint16
-		sel uint8
+		sel pin.Signal
 		r   uint16
-	}
-	var assertions = []assertion{
+	}{
 		{
 			a:   55,
 			b:   96,
-			sel: 0,
+			sel: pin.Inactive,
 			r:   55,
 		},
 		{
 			a:   0,
 			b:   53,
-			sel: 0,
+			sel: pin.Inactive,
 			r:   0,
 		},
 		{
 			a:   255,
 			b:   12,
-			sel: 0,
+			sel: pin.Inactive,
 			r:   255,
 		},
 		{
 			a:   0,
 			b:   0,
-			sel: 0,
+			sel: pin.Inactive,
 			r:   0,
 		},
 		{
 			a:   12,
 			b:   0,
-			sel: 1,
+			sel: pin.Active,
 			r:   0,
 		},
 		{
 			a:   123,
 			b:   99,
-			sel: 1,
+			sel: pin.Active,
 			r:   99,
 		},
 		{
 			a:   0,
 			b:   123,
-			sel: 1,
+			sel: pin.Active,
 			r:   123,
 		},
 		{
 			a:   0,
 			b:   0,
-			sel: 1,
+			sel: pin.Active,
 			r:   0,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v, b is %v and sel is %v", a.a, a.b, a.sel), func(t *testing.T) {
-			r := Mux2Way(a.sel, a.a, a.b)
+			r := Mux2Way16(a.sel, a.a, a.b)
 			if a.r != r {
 				t.Errorf("expected %v with a: %v, b: %v and sel: %v but got %v", a.r, a.a, a.b, a.sel, r)
 			}
@@ -652,13 +439,13 @@ func TestMux2Way(t *testing.T) {
 	}
 }
 
-func TestMux4Way(t *testing.T) {
+func TestMux4Way16(t *testing.T) {
 	type assertion struct {
 		a uint16
 		b uint16
 		c uint16
 		d uint16
-		s [2]uint8
+		s [2]pin.Signal
 		r uint16
 	}
 	var assertions = []assertion{
@@ -667,7 +454,7 @@ func TestMux4Way(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]uint8{0, 0},
+			s: [2]pin.Signal{pin.Inactive, pin.Inactive},
 			r: 10,
 		},
 		{
@@ -675,7 +462,7 @@ func TestMux4Way(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]uint8{0, 1},
+			s: [2]pin.Signal{pin.Inactive, pin.Active},
 			r: 20,
 		},
 		{
@@ -683,7 +470,7 @@ func TestMux4Way(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]uint8{1, 0},
+			s: [2]pin.Signal{pin.Active, pin.Inactive},
 			r: 30,
 		},
 		{
@@ -691,13 +478,13 @@ func TestMux4Way(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]uint8{1, 1},
+			s: [2]pin.Signal{pin.Active, pin.Active},
 			r: 40,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given s: %v", a.s), func(t *testing.T) {
-			r := Mux4Way(a.s, a.a, a.b, a.c, a.d)
+			r := Mux4Way16(a.s, a.a, a.b, a.c, a.d)
 			if a.r != r {
 				t.Errorf("expected %v given s: %v but got %v", a.r, a.s, r)
 			}
@@ -705,7 +492,7 @@ func TestMux4Way(t *testing.T) {
 	}
 }
 
-func TestMux8Way(t *testing.T) {
+func TestMux8Way16(t *testing.T) {
 	type assertion struct {
 		a uint16
 		b uint16
@@ -716,7 +503,7 @@ func TestMux8Way(t *testing.T) {
 		g uint16
 		h uint16
 
-		s [3]uint8
+		s [3]pin.Signal
 		r uint16
 	}
 	var assertions = []assertion{
@@ -730,7 +517,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{0, 0, 0},
+			s: [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Inactive},
 			r: 10,
 		},
 		{
@@ -743,7 +530,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{0, 0, 1},
+			s: [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Active},
 			r: 20,
 		},
 		{
@@ -756,7 +543,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{0, 1, 0},
+			s: [3]pin.Signal{pin.Inactive, pin.Active, pin.Inactive},
 			r: 30,
 		},
 		{
@@ -769,7 +556,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{0, 1, 1},
+			s: [3]pin.Signal{pin.Inactive, pin.Active, pin.Active},
 			r: 40,
 		},
 		{
@@ -782,7 +569,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{1, 0, 0},
+			s: [3]pin.Signal{pin.Active, pin.Inactive, pin.Inactive},
 			r: 50,
 		},
 		{
@@ -795,7 +582,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{1, 0, 1},
+			s: [3]pin.Signal{pin.Active, pin.Inactive, pin.Active},
 			r: 60,
 		},
 		{
@@ -808,7 +595,7 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{1, 1, 0},
+			s: [3]pin.Signal{pin.Active, pin.Active, pin.Inactive},
 			r: 70,
 		},
 		{
@@ -821,13 +608,13 @@ func TestMux8Way(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]uint8{1, 1, 1},
+			s: [3]pin.Signal{pin.Active, pin.Active, pin.Active},
 			r: 80,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("with s: %v", a.s), func(t *testing.T) {
-			r := Mux8Way(a.s, a.a, a.b, a.c, a.d, a.e, a.f, a.g, a.h)
+			r := Mux8Way16(a.s, a.a, a.b, a.c, a.d, a.e, a.f, a.g, a.h)
 			if a.r != r {
 				t.Errorf("expected %v with s: %v got got %v", a.r, a.s, r)
 			}
@@ -838,39 +625,39 @@ func TestMux8Way(t *testing.T) {
 func TestDemux2Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  uint8
+		s  pin.Signal
 		a  uint16
 		b  uint16
 	}
 	var assertions = []assertion{
 		{
 			in: 0,
-			s:  0,
+			s:  pin.Inactive,
 			a:  0,
 			b:  0,
 		},
 		{
 			in: 65_535,
-			s:  0,
+			s:  pin.Inactive,
 			a:  65_535,
 			b:  0,
 		},
 		{
 			in: 256,
-			s:  1,
+			s:  pin.Active,
 			a:  0,
 			b:  256,
 		},
 		{
 			in: 0,
-			s:  1,
+			s:  pin.Active,
 			a:  0,
 			b:  0,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in is %v and s is %v", a.in, a.s), func(t *testing.T) {
-			ar, br := Demux2Way(a.s, a.in)
+			ar, br := Demux2Way16(a.s, a.in)
 			if ar != a.a {
 				t.Errorf("expected ar %v but got %v", a.a, ar)
 			}
@@ -884,7 +671,7 @@ func TestDemux2Way(t *testing.T) {
 func TestDemux4Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  [2]uint8
+		s  [2]pin.Signal
 		a  uint16
 		b  uint16
 		c  uint16
@@ -893,7 +680,7 @@ func TestDemux4Way(t *testing.T) {
 	var assertions = []assertion{
 		{
 			in: 65_313,
-			s:  [2]uint8{0, 0},
+			s:  [2]pin.Signal{pin.Inactive, pin.Inactive},
 			a:  65_313,
 			b:  0,
 			c:  0,
@@ -901,7 +688,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 23_230,
-			s:  [2]uint8{0, 1},
+			s:  [2]pin.Signal{pin.Inactive, pin.Active},
 			a:  0,
 			b:  23_230,
 			c:  0,
@@ -909,7 +696,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 9012,
-			s:  [2]uint8{1, 0},
+			s:  [2]pin.Signal{pin.Active, pin.Inactive},
 			a:  0,
 			b:  0,
 			c:  9012,
@@ -917,7 +704,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 1234,
-			s:  [2]uint8{1, 1},
+			s:  [2]pin.Signal{pin.Active, pin.Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -926,7 +713,7 @@ func TestDemux4Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr := Demux4Way(a.s, a.in)
+			ar, br, cr, dr := Demux4Way16(a.s, a.in)
 			if a.a != ar {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
@@ -946,7 +733,7 @@ func TestDemux4Way(t *testing.T) {
 func TestDemux8Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  [3]uint8
+		s  [3]pin.Signal
 		a  uint16
 		b  uint16
 		c  uint16
@@ -959,7 +746,7 @@ func TestDemux8Way(t *testing.T) {
 	var assertions = []assertion{
 		{
 			in: 65_313,
-			s:  [3]uint8{0, 0, 0},
+			s:  [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Inactive},
 			a:  65_313,
 			b:  0,
 			c:  0,
@@ -971,7 +758,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 56_555,
-			s:  [3]uint8{0, 0, 1},
+			s:  [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Active},
 			a:  0,
 			b:  56_555,
 			c:  0,
@@ -983,7 +770,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 1234,
-			s:  [3]uint8{0, 1, 0},
+			s:  [3]pin.Signal{pin.Inactive, pin.Active, pin.Inactive},
 			a:  0,
 			b:  0,
 			c:  1234,
@@ -995,7 +782,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 9999,
-			s:  [3]uint8{0, 1, 1},
+			s:  [3]pin.Signal{pin.Inactive, pin.Active, pin.Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -1007,7 +794,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 8989,
-			s:  [3]uint8{1, 0, 0},
+			s:  [3]pin.Signal{pin.Active, pin.Inactive, pin.Inactive},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -1019,7 +806,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 13372,
-			s:  [3]uint8{1, 0, 1},
+			s:  [3]pin.Signal{pin.Active, pin.Inactive, pin.Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -1031,7 +818,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 12341,
-			s:  [3]uint8{1, 1, 0},
+			s:  [3]pin.Signal{pin.Active, pin.Active, pin.Inactive},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -1043,7 +830,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 4455,
-			s:  [3]uint8{1, 1, 1},
+			s:  [3]pin.Signal{pin.Active, pin.Active, pin.Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -1056,7 +843,7 @@ func TestDemux8Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr, er, fr, gr, hr := Demux8Way(a.s, a.in)
+			ar, br, cr, dr, er, fr, gr, hr := Demux8Way16(a.s, a.in)
 			if ar != a.a {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
@@ -1088,23 +875,23 @@ func TestDemux8Way(t *testing.T) {
 func TestDFF(t *testing.T) {
 	dff := &DFF{}
 	dff.In.Activate()
-	if bit := dff.Out(snack.InactiveSignal()); bit.IsActive() {
+	if bit := dff.Out(pin.Inactive); bit == pin.Active {
 		t.Errorf("expected dff to be unset before tick")
 	}
-	if bit := dff.Out(snack.ActiveSignal()); !bit.IsActive() {
+	if bit := dff.Out(pin.Active); bit == pin.Inactive {
 		t.Errorf("expected dff to be set after tick")
 	}
 	dff.In.Deactivate()
-	if bit := dff.Out(snack.InactiveSignal()); !bit.IsActive() {
+	if bit := dff.Out(pin.Inactive); bit == pin.Inactive {
 		t.Errorf("expected dff to be set before tick")
 	}
-	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
+	if bit := dff.Out(pin.Active); bit == pin.Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
+	if bit := dff.Out(pin.Active); bit == pin.Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
+	if bit := dff.Out(pin.Active); bit == pin.Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
 }

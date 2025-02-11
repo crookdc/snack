@@ -1,35 +1,35 @@
 package alu
 
 import (
-	"github.com/crookdc/snack"
 	"github.com/crookdc/snack/internal/gate"
+	"github.com/crookdc/snack/internal/pin"
 )
 
 // ALU (Arithmetic Logic Unit) represents an actual hardware chip that can handle an array of arithmetic operations
 // which are executed on two 16-bit unsigned integers and which produces a single 16-bit unsigned integer as result.
 type ALU struct {
 	// ZX sets all bits of x to 0
-	ZX snack.Signal
+	ZX pin.Pin
 	// NX negates all bits of x
-	NX snack.Signal
+	NX pin.Pin
 	// ZY sets all bits of y to 0
-	ZY snack.Signal
+	ZY pin.Pin
 	// NY negates all bits of y
-	NY snack.Signal
+	NY pin.Pin
 	// F when set causes ALU operator to be a bitwise AND, otherwise operator is addition
-	F snack.Signal
+	F pin.Pin
 	// NO negates all bits of output
-	NO snack.Signal
+	NO pin.Pin
 }
 
 // Call performs operations on the provided inputs as outlined by the state of the ALU
 func (a *ALU) Call(x, y uint16) uint16 {
-	x = gate.AndUint16(x, snack.Expand16(gate.NotBit(a.ZX)))
-	x = gate.XorUint16(x, snack.Expand16(a.NX))
+	x = gate.AndUint16(x, pin.Expand16(gate.Not(a.ZX.Signal())))
+	x = gate.XorUint16(x, pin.Expand16(a.NX.Signal()))
 
-	y = gate.AndUint16(y, snack.Expand16(gate.NotBit(a.ZY)))
-	y = gate.XorUint16(y, snack.Expand16(a.NY))
+	y = gate.AndUint16(y, pin.Expand16(gate.Not(a.ZY.Signal())))
+	y = gate.XorUint16(y, pin.Expand16(a.NY.Signal()))
 
-	out := gate.Mux2Way(a.F.Bin(), gate.AndUint16(x, y), Adder16(x, y))
-	return gate.XorUint16(out, snack.Expand16(a.NO))
+	out := gate.Mux2Way16(a.F.Signal(), gate.AndUint16(x, y), Adder16(x, y))
+	return gate.XorUint16(out, pin.Expand16(a.NO.Signal()))
 }
