@@ -180,17 +180,17 @@ func TestNotUint16(t *testing.T) {
 
 func TestNotBit(t *testing.T) {
 	type assertion struct {
-		a snack.Bit
-		r snack.Bit
+		a snack.Signal
+		r snack.Signal
 	}
 	var assertions = []assertion{
 		{
-			a: snack.UnsetBit(),
-			r: snack.SetBit(),
+			a: snack.InactiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			r: snack.UnsetBit(),
+			a: snack.ActiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 	}
 	for _, a := range assertions {
@@ -296,30 +296,30 @@ func TestAndUint16(t *testing.T) {
 
 func TestAndBit(t *testing.T) {
 	type assertion struct {
-		a snack.Bit
-		b snack.Bit
-		r snack.Bit
+		a snack.Signal
+		b snack.Signal
+		r snack.Signal
 	}
 	var assertions = []assertion{
 		{
-			a: snack.UnsetBit(),
-			b: snack.UnsetBit(),
-			r: snack.UnsetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 		{
-			a: snack.UnsetBit(),
-			b: snack.SetBit(),
-			r: snack.UnsetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.UnsetBit(),
-			r: snack.UnsetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.SetBit(),
-			r: snack.SetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 	}
 	for _, a := range assertions {
@@ -425,30 +425,30 @@ func TestOrUint16(t *testing.T) {
 
 func TestOrBit(t *testing.T) {
 	type assertion struct {
-		a snack.Bit
-		b snack.Bit
-		r snack.Bit
+		a snack.Signal
+		b snack.Signal
+		r snack.Signal
 	}
 	var assertions = []assertion{
 		{
-			a: snack.UnsetBit(),
-			b: snack.UnsetBit(),
-			r: snack.UnsetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 		{
-			a: snack.UnsetBit(),
-			b: snack.SetBit(),
-			r: snack.SetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.UnsetBit(),
-			r: snack.SetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.SetBit(),
-			r: snack.SetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 	}
 	for _, a := range assertions {
@@ -549,30 +549,30 @@ func TestXorUint16(t *testing.T) {
 
 func TestXorBit(t *testing.T) {
 	type assertion struct {
-		a snack.Bit
-		b snack.Bit
-		r snack.Bit
+		a snack.Signal
+		b snack.Signal
+		r snack.Signal
 	}
 	var assertions = []assertion{
 		{
-			a: snack.UnsetBit(),
-			b: snack.UnsetBit(),
-			r: snack.UnsetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 		{
-			a: snack.UnsetBit(),
-			b: snack.SetBit(),
-			r: snack.SetBit(),
+			a: snack.InactiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.UnsetBit(),
-			r: snack.SetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.InactiveSignal(),
+			r: snack.ActiveSignal(),
 		},
 		{
-			a: snack.SetBit(),
-			b: snack.SetBit(),
-			r: snack.UnsetBit(),
+			a: snack.ActiveSignal(),
+			b: snack.ActiveSignal(),
+			r: snack.InactiveSignal(),
 		},
 	}
 	for _, a := range assertions {
@@ -1086,29 +1086,25 @@ func TestDemux8Way(t *testing.T) {
 }
 
 func TestDFF(t *testing.T) {
-	dff := NewDFF()
-	dff.Set(snack.SetBit())
-	if bit := dff.Get(); bit.IsSet() {
+	dff := &DFF{}
+	dff.In.Activate()
+	if bit := dff.Out(snack.InactiveSignal()); bit.IsActive() {
 		t.Errorf("expected dff to be unset before tick")
 	}
-	dff.Flip()
-	if bit := dff.Get(); !bit.IsSet() {
+	if bit := dff.Out(snack.ActiveSignal()); !bit.IsActive() {
 		t.Errorf("expected dff to be set after tick")
 	}
-	dff.Set(snack.UnsetBit())
-	if bit := dff.Get(); !bit.IsSet() {
+	dff.In.Deactivate()
+	if bit := dff.Out(snack.InactiveSignal()); !bit.IsActive() {
 		t.Errorf("expected dff to be set before tick")
 	}
-	dff.Flip()
-	if bit := dff.Get(); bit.IsSet() {
+	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	dff.Flip()
-	if bit := dff.Get(); bit.IsSet() {
+	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	dff.Flip()
-	if bit := dff.Get(); bit.IsSet() {
+	if bit := dff.Out(snack.ActiveSignal()); bit.IsActive() {
 		t.Errorf("expected dff to be unset after tick")
 	}
 }

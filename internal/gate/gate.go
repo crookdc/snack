@@ -31,8 +31,8 @@ func NotUint16(a uint16) uint16 {
 	return joinUint16(Not(msb), Not(lsb))
 }
 
-func NotBit(a snack.Bit) snack.Bit {
-	return snack.NewBit(Not(a.Bin()) & 1)
+func NotBit(a snack.Signal) snack.Signal {
+	return snack.NewSignal(Not(a.Bin()) & 1)
 }
 
 func And(a, b uint8) uint8 {
@@ -45,8 +45,8 @@ func AndUint16(a, b uint16) uint16 {
 	return joinUint16(And(am, bm), And(al, bl))
 }
 
-func AndBit(a, b snack.Bit) snack.Bit {
-	return snack.NewBit(And(a.Bin(), b.Bin()))
+func AndBit(a, b snack.Signal) snack.Signal {
+	return snack.NewSignal(And(a.Bin(), b.Bin()))
 }
 
 func Or(a, b uint8) uint8 {
@@ -59,8 +59,8 @@ func OrUint16(a, b uint16) uint16 {
 	return joinUint16(Or(am, bm), Or(al, bl))
 }
 
-func OrBit(a, b snack.Bit) snack.Bit {
-	return snack.NewBit(Or(a.Bin(), b.Bin()))
+func OrBit(a, b snack.Signal) snack.Signal {
+	return snack.NewSignal(Or(a.Bin(), b.Bin()))
 }
 
 func Xor(a, b uint8) uint8 {
@@ -73,8 +73,8 @@ func XorUint16(a, b uint16) uint16 {
 	return joinUint16(Xor(am, bm), Xor(al, bl))
 }
 
-func XorBit(a, b snack.Bit) snack.Bit {
-	return snack.NewBit(Xor(a.Bin(), b.Bin()))
+func XorBit(a, b snack.Signal) snack.Signal {
+	return snack.NewSignal(Xor(a.Bin(), b.Bin()))
 }
 
 // Mux2Way provides a multiplexer for 2 inputs and a selector. This variant of the multiplexer supports
@@ -88,9 +88,9 @@ func Mux2Way(s uint8, a, b uint16) uint16 {
 
 // Mux2WayBit provides a multiplexer to two single bit inputs. More information on the multiplexer is given in the
 // Mux2Way function comment.
-func Mux2WayBit(s uint8, a, b snack.Bit) snack.Bit {
+func Mux2WayBit(s uint8, a, b snack.Signal) snack.Signal {
 	s = selector(s)
-	return OrBit(AndBit(NotBit(snack.NewBit(s&1)), a), AndBit(snack.NewBit(s&1), b))
+	return OrBit(AndBit(NotBit(snack.NewSignal(s&1)), a), AndBit(snack.NewSignal(s&1), b))
 }
 
 // Mux4Way provides a multiplexer for 4 inputs and a selector consisting of 2 bytes. Non-zero values on
@@ -167,39 +167,15 @@ func joinUint16(msb, lsb uint8) uint16 {
 	return uint16(msb)<<8 | uint16(lsb)
 }
 
-func NewDFF() *DFF {
-	return &DFF{
-		a: snack.UnsetBit(),
-		b: snack.UnsetBit(),
-	}
-}
-
 // DFF represents a data flip-flop capable of holding a single bit of information across CPU cycles.
 type DFF struct {
-	l snack.Bit
-
-	a snack.Bit
-	b snack.Bit
+	In  snack.Signal
+	out snack.Signal
 }
 
-// Get returns a copy of the current read value.
-func (d *DFF) Get() snack.Bit {
-	return Mux2WayBit(d.l.Bin(), d.a, d.b)
-}
-
-// Set writes to the current write value, leaving the read value as-is.
-func (d *DFF) Set(v snack.Bit) {
-	d.a = Mux2WayBit(d.l.Bin(), d.a, v)
-	d.b = Mux2WayBit(d.l.Bin(), v, d.b)
-}
-
-// Flip notes the transition from one cycle to the next and hence commits the current write value to become the read
-// value.
-func (d *DFF) Flip() {
-	if d.l.IsSet() {
-		d.l = snack.UnsetBit()
-	} else {
-		d.l = snack.SetBit()
+func (d *DFF) Out(clk snack.Signal) snack.Signal {
+	if clk.IsActive() {
+		d.out = d.In
 	}
-	d.a, d.b = d.Get(), d.Get()
+	return d.out
 }

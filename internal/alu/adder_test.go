@@ -8,36 +8,36 @@ import (
 
 func TestHalfAdder(t *testing.T) {
 	type assertion struct {
-		a     snack.Bit
-		b     snack.Bit
-		carry snack.Bit
-		sum   snack.Bit
+		a     snack.Signal
+		b     snack.Signal
+		carry snack.Signal
+		sum   snack.Signal
 	}
 	var assertions = []assertion{
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.UnsetBit(),
-			carry: snack.UnsetBit(),
-			sum:   snack.UnsetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.InactiveSignal(),
+			carry: snack.InactiveSignal(),
+			sum:   snack.InactiveSignal(),
 		},
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.SetBit(),
-			carry: snack.UnsetBit(),
-			sum:   snack.SetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.ActiveSignal(),
+			carry: snack.InactiveSignal(),
+			sum:   snack.ActiveSignal(),
 		},
 		{
-			a:     snack.SetBit(),
-			b:     snack.UnsetBit(),
-			carry: snack.UnsetBit(),
-			sum:   snack.SetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.InactiveSignal(),
+			carry: snack.InactiveSignal(),
+			sum:   snack.ActiveSignal(),
 		},
 
 		{
-			a:     snack.SetBit(),
-			b:     snack.SetBit(),
-			carry: snack.SetBit(),
-			sum:   snack.UnsetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.ActiveSignal(),
+			carry: snack.ActiveSignal(),
+			sum:   snack.InactiveSignal(),
 		},
 	}
 	for _, a := range assertions {
@@ -55,68 +55,68 @@ func TestHalfAdder(t *testing.T) {
 
 func TestFullAdder(t *testing.T) {
 	type assertion struct {
-		a     snack.Bit
-		b     snack.Bit
-		c     snack.Bit
-		sum   snack.Bit
-		carry snack.Bit
+		a     snack.Signal
+		b     snack.Signal
+		c     snack.Signal
+		sum   snack.Signal
+		carry snack.Signal
 	}
 	var asssertions = []assertion{
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.UnsetBit(),
-			c:     snack.UnsetBit(),
-			sum:   snack.UnsetBit(),
-			carry: snack.UnsetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.InactiveSignal(),
+			c:     snack.InactiveSignal(),
+			sum:   snack.InactiveSignal(),
+			carry: snack.InactiveSignal(),
 		},
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.UnsetBit(),
-			c:     snack.SetBit(),
-			sum:   snack.SetBit(),
-			carry: snack.UnsetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.InactiveSignal(),
+			c:     snack.ActiveSignal(),
+			sum:   snack.ActiveSignal(),
+			carry: snack.InactiveSignal(),
 		},
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.SetBit(),
-			c:     snack.UnsetBit(),
-			sum:   snack.SetBit(),
-			carry: snack.UnsetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.ActiveSignal(),
+			c:     snack.InactiveSignal(),
+			sum:   snack.ActiveSignal(),
+			carry: snack.InactiveSignal(),
 		},
 		{
-			a:     snack.SetBit(),
-			b:     snack.UnsetBit(),
-			c:     snack.UnsetBit(),
-			sum:   snack.SetBit(),
-			carry: snack.UnsetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.InactiveSignal(),
+			c:     snack.InactiveSignal(),
+			sum:   snack.ActiveSignal(),
+			carry: snack.InactiveSignal(),
 		},
 		{
-			a:     snack.UnsetBit(),
-			b:     snack.SetBit(),
-			c:     snack.SetBit(),
-			sum:   snack.UnsetBit(),
-			carry: snack.SetBit(),
+			a:     snack.InactiveSignal(),
+			b:     snack.ActiveSignal(),
+			c:     snack.ActiveSignal(),
+			sum:   snack.InactiveSignal(),
+			carry: snack.ActiveSignal(),
 		},
 		{
-			a:     snack.SetBit(),
-			b:     snack.SetBit(),
-			c:     snack.UnsetBit(),
-			sum:   snack.UnsetBit(),
-			carry: snack.SetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.ActiveSignal(),
+			c:     snack.InactiveSignal(),
+			sum:   snack.InactiveSignal(),
+			carry: snack.ActiveSignal(),
 		},
 		{
-			a:     snack.SetBit(),
-			b:     snack.UnsetBit(),
-			c:     snack.SetBit(),
-			sum:   snack.UnsetBit(),
-			carry: snack.SetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.InactiveSignal(),
+			c:     snack.ActiveSignal(),
+			sum:   snack.InactiveSignal(),
+			carry: snack.ActiveSignal(),
 		},
 		{
-			a:     snack.SetBit(),
-			b:     snack.SetBit(),
-			c:     snack.SetBit(),
-			sum:   snack.SetBit(),
-			carry: snack.SetBit(),
+			a:     snack.ActiveSignal(),
+			b:     snack.ActiveSignal(),
+			c:     snack.ActiveSignal(),
+			sum:   snack.ActiveSignal(),
+			carry: snack.ActiveSignal(),
 		},
 	}
 	for _, a := range asssertions {

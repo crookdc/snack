@@ -9,17 +9,17 @@ import (
 // which are executed on two 16-bit unsigned integers and which produces a single 16-bit unsigned integer as result.
 type ALU struct {
 	// ZX sets all bits of x to 0
-	ZX snack.Bit
+	ZX snack.Signal
 	// NX negates all bits of x
-	NX snack.Bit
+	NX snack.Signal
 	// ZY sets all bits of y to 0
-	ZY snack.Bit
+	ZY snack.Signal
 	// NY negates all bits of y
-	NY snack.Bit
+	NY snack.Signal
 	// F when set causes ALU operator to be a bitwise AND, otherwise operator is addition
-	F snack.Bit
+	F snack.Signal
 	// NO negates all bits of output
-	NO snack.Bit
+	NO snack.Signal
 }
 
 // Call performs operations on the provided inputs as outlined by the state of the ALU
