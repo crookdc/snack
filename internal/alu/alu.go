@@ -23,13 +23,13 @@ type ALU struct {
 }
 
 // Call performs operations on the provided inputs as outlined by the state of the ALU
-func (a *ALU) Call(x, y uint16) uint16 {
-	x = gate.AndUint16(x, pin.Expand16(gate.Not(a.ZX.Signal())))
-	x = gate.XorUint16(x, pin.Expand16(a.NX.Signal()))
+func (a *ALU) Call(x, y [16]pin.Signal) [16]pin.Signal {
+	x = gate.And16(x, pin.Expand16(gate.Not(a.ZX.Signal())))
+	x = gate.Xor16(x, pin.Expand16(a.NX.Signal()))
 
-	y = gate.AndUint16(y, pin.Expand16(gate.Not(a.ZY.Signal())))
-	y = gate.XorUint16(y, pin.Expand16(a.NY.Signal()))
+	y = gate.And16(y, pin.Expand16(gate.Not(a.ZY.Signal())))
+	y = gate.Xor16(y, pin.Expand16(a.NY.Signal()))
 
-	out := gate.Mux2Way16(a.F.Signal(), gate.AndUint16(x, y), Adder16(x, y))
-	return gate.XorUint16(out, pin.Expand16(a.NO.Signal()))
+	out := gate.Mux2Way16(a.F.Signal(), gate.And16(x, y), Adder16(x, y))
+	return gate.Xor16(out, pin.Expand16(a.NO.Signal()))
 }

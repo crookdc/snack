@@ -33,30 +33,30 @@ func TestBit_Out(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	reg := new(Register)
-	if out := reg.Out(pin.New(pin.Inactive)); out != 0 {
+	if out := reg.Out(pin.New(pin.Inactive)); out != pin.Split16(0) {
 		t.Errorf("expected 0 but got %v", out)
 	}
-	reg.Set(65234)
+	reg.Set(pin.Split16(65234))
 	// The register should still yield the initialized value since the clock is inactive
-	if out := reg.Out(pin.New(pin.Inactive)); out != 0 {
+	if out := reg.Out(pin.New(pin.Inactive)); out != pin.Split16(0) {
 		t.Errorf("expected 0 but got %v", out)
 	}
 	// Once the clock becomes active we should be receiving the newly set value
-	if out := reg.Out(pin.New(pin.Active)); out != 65234 {
+	if out := reg.Out(pin.New(pin.Active)); out != pin.Split16(65234) {
 		t.Errorf("expected 65234 but got %v", out)
 	}
 	// Subsequent outputs should remain the same regardless of the clocks value
-	if out := reg.Out(pin.New(pin.Inactive)); out != 65234 {
+	if out := reg.Out(pin.New(pin.Inactive)); out != pin.Split16(65234) {
 		t.Errorf("expected 65234 but got %v", out)
 	}
-	if out := reg.Out(pin.New(pin.Active)); out != 65234 {
+	if out := reg.Out(pin.New(pin.Active)); out != pin.Split16(65234) {
 		t.Errorf("expected 65234 but got %v", out)
 	}
-	reg.Set(40923)
-	if out := reg.Out(pin.New(pin.Inactive)); out != 65234 {
+	reg.Set(pin.Split16(40923))
+	if out := reg.Out(pin.New(pin.Inactive)); out != pin.Split16(65234) {
 		t.Errorf("expected 65234 but got %v", out)
 	}
-	if out := reg.Out(pin.New(pin.Active)); out != 40923 {
+	if out := reg.Out(pin.New(pin.Active)); out != pin.Split16(40923) {
 		t.Errorf("expected 40923 but got %v", out)
 	}
 }

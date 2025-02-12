@@ -126,7 +126,7 @@ func TestExpand16(t *testing.T) {
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given n %v", a.n), func(t *testing.T) {
 			r := Expand16(a.n)
-			if r != a.r {
+			if r != Split16(a.r) {
 				t.Errorf("expected %v but got %v", a.r, r)
 			}
 		})

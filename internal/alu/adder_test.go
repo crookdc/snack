@@ -169,8 +169,8 @@ func TestAdder16(t *testing.T) {
 		},
 	}
 	for _, a := range assertions {
-		r := Adder16(a.a, a.b)
-		if r != a.r {
+		r := Adder16(pin.Split16(a.a), pin.Split16(a.b))
+		if r != pin.Split16(a.r) {
 			t.Errorf("expected %v but got %v", a.r, r)
 		}
 	}

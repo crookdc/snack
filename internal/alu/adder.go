@@ -20,15 +20,12 @@ func FullAdder(a, b, c pin.Signal) (carry pin.Signal, sum pin.Signal) {
 }
 
 // Adder16 adds two 16-bit integers and returns the result. The carry bit is ignored by the adder.
-func Adder16(a, b uint16) uint16 {
-	ab := pin.Split16(a)
-	bb := pin.Split16(b)
-
+func Adder16(a, b [16]pin.Signal) [16]pin.Signal {
 	r := [16]pin.Signal{}
 	c, s := pin.Inactive, pin.Inactive
 	for i := range 16 {
-		c, s = FullAdder(ab[15-i], bb[15-i], c)
+		c, s = FullAdder(a[15-i], b[15-i], c)
 		r[15-i] = s
 	}
-	return pin.Join16(r)
+	return r
 }
