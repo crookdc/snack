@@ -43,37 +43,37 @@ func New(s Signal) Pin {
 	return Pin{n: s}
 }
 
-func (b *Pin) Mask() uint8 {
-	if b.Active() {
+func (p *Pin) Mask() uint8 {
+	if p.Active() {
 		return 0xFF
 	}
 	return 0
 }
 
-func (b *Pin) Set(s Signal) {
-	b.n = s
+func (p *Pin) Set(s Signal) {
+	p.n = s
 }
 
-func (b *Pin) Activate() {
-	b.n = Active
+func (p *Pin) Activate() {
+	p.Set(Active)
 }
 
-func (b *Pin) Deactivate() {
-	b.n = Inactive
+func (p *Pin) Deactivate() {
+	p.Set(Inactive)
 }
 
-func (b *Pin) Flip() {
-	if b.n == Inactive {
-		b.n = Active
+func (p *Pin) Flip() {
+	if p.n == Inactive {
+		p.Set(Active)
 	} else {
-		b.n = Inactive
+		p.Set(Inactive)
 	}
 }
 
-func (b *Pin) Active() bool {
-	return b.n == Active
+func (p *Pin) Active() bool {
+	return p.n == Active
 }
 
-func (b *Pin) Signal() Signal {
-	return b.n
+func (p *Pin) Signal() Signal {
+	return p.n
 }
