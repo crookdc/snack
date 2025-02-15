@@ -184,6 +184,6 @@ type Counter struct {
 func (c *Counter) Out(clk pin.Pin, inc pin.Pin, rst pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	out := c.register.Out(clk, in)
 	out = alu.Adder16(out, [16]pin.Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, gate.And(gate.Not(clk.Signal()), inc.Signal())})
-	out = gate.And16(out, pin.Expand16(gate.Not(rst.Signal())))
+	out = gate.And16(out, pin.Expand16(gate.Not(gate.And(gate.Not(clk.Signal()), rst.Signal()))))
 	return c.register.Out(pin.New(pin.Active), pin.New16(out))
 }
