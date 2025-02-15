@@ -132,3 +132,22 @@ func (r *RAM4K) Out(clk pin.Pin, addr [12]pin.Pin, in [16]pin.Pin) [16]pin.Signa
 		r.Chips[7].Out(pin.New(hl), nxt, in),
 	)
 }
+
+type RAM16K struct {
+	Chips [4]RAM4K
+}
+
+func (r *RAM16K) Out(clk pin.Pin, addr [14]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
+	al, bl, cl, dl := gate.DMux4Way1(
+		[2]pin.Signal{addr[0].Signal(), addr[1].Signal()},
+		clk.Signal(),
+	)
+	nxt := [12]pin.Pin{addr[2], addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11], addr[12], addr[13]}
+	return gate.Mux4Way16(
+		[2]pin.Signal{addr[0].Signal(), addr[1].Signal()},
+		r.Chips[0].Out(pin.New(al), nxt, in),
+		r.Chips[1].Out(pin.New(bl), nxt, in),
+		r.Chips[2].Out(pin.New(cl), nxt, in),
+		r.Chips[3].Out(pin.New(dl), nxt, in),
+	)
+}
