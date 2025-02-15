@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"fmt"
 	"github.com/crookdc/snack/internal/pin"
 	"testing"
 )
@@ -63,35 +64,51 @@ func TestRAM8_Out(t *testing.T) {
 		}
 		return converted == b
 	}
-	addr := func(a, b, c pin.Signal) [3]pin.Pin {
-		return [3]pin.Pin{pin.New(a), pin.New(b), pin.New(c)}
+	address := func(n int) [3]pin.Pin {
+		return [3]pin.Pin{
+			pin.New(pin.Signal(n >> 0 & 1)),
+			pin.New(pin.Signal(n >> 1 & 1)),
+			pin.New(pin.Signal(n >> 2 & 1)),
+		}
 	}
-
 	ram := RAM8{}
 	clk := pin.New(pin.Inactive)
-	n := ram.Out(clk, addr(0, 0, 1), pin.New16(pin.Split16(65343)))
-	if !equals(pin.New16(pin.Split16(0)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+	for i := range 8 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("setting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", 0, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+		})
 	}
-	clk.Activate()
-	n = ram.Out(clk, addr(0, 0, 1), pin.New16(pin.Split16(65343)))
-	if !equals(pin.New16(pin.Split16(65343)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(65343)), n)
-	}
-	clk.Deactivate()
-	n = ram.Out(clk, addr(0, 0, 0), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(0)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
-	}
-	clk.Activate()
-	n = ram.Out(clk, addr(0, 0, 0), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(12345)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(12345)), n)
-	}
-	clk.Deactivate()
-	n = ram.Out(clk, addr(0, 0, 1), pin.New16(pin.Split16(65343)))
-	if !equals(pin.New16(pin.Split16(65343)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(65343)), n)
+
+	for i := range 8 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("unsetting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(0)))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+		})
 	}
 }
 
@@ -103,48 +120,180 @@ func TestRAM64_Out(t *testing.T) {
 		}
 		return converted == b
 	}
-	addr := func(a, b, c, d, e, f pin.Signal) [6]pin.Pin {
-		return [6]pin.Pin{pin.New(a), pin.New(b), pin.New(c), pin.New(d), pin.New(e), pin.New(f)}
+	address := func(n int) [6]pin.Pin {
+		return [6]pin.Pin{
+			pin.New(pin.Signal(n >> 0 & 1)),
+			pin.New(pin.Signal(n >> 1 & 1)),
+			pin.New(pin.Signal(n >> 2 & 1)),
+			pin.New(pin.Signal(n >> 3 & 1)),
+			pin.New(pin.Signal(n >> 4 & 1)),
+			pin.New(pin.Signal(n >> 5 & 1)),
+		}
 	}
-
 	ram := RAM64{}
 	clk := pin.New(pin.Inactive)
-	n := ram.Out(clk, addr(0, 0, 0, 0, 0, 0), pin.New16(pin.Split16(50456)))
-	if !equals(pin.New16(pin.Split16(0)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+	for i := range 64 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("setting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", 0, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+		})
 	}
-	clk.Activate()
-	n = ram.Out(clk, addr(0, 0, 0, 0, 0, 0), pin.New16(pin.Split16(50456)))
-	if !equals(pin.New16(pin.Split16(50456)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(50456)), n)
+
+	for i := range 64 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("unsetting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(0)))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+		})
 	}
-	clk.Deactivate()
-	n = ram.Out(clk, addr(0, 0, 0, 0, 1, 1), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(0)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+}
+
+func TestRAM512_Out(t *testing.T) {
+	equals := func(a [16]pin.Pin, b [16]pin.Signal) bool {
+		converted := [16]pin.Signal{}
+		for i := range a {
+			converted[i] = a[i].Signal()
+		}
+		return converted == b
 	}
-	clk.Activate()
-	n = ram.Out(clk, addr(0, 0, 0, 0, 1, 1), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(12345)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+	address := func(n int) [9]pin.Pin {
+		return [9]pin.Pin{
+			pin.New(pin.Signal(n >> 0 & 1)),
+			pin.New(pin.Signal(n >> 1 & 1)),
+			pin.New(pin.Signal(n >> 2 & 1)),
+			pin.New(pin.Signal(n >> 3 & 1)),
+			pin.New(pin.Signal(n >> 4 & 1)),
+			pin.New(pin.Signal(n >> 5 & 1)),
+			pin.New(pin.Signal(n >> 6 & 1)),
+			pin.New(pin.Signal(n >> 7 & 1)),
+			pin.New(pin.Signal(n >> 8 & 1)),
+		}
 	}
-	clk.Deactivate()
-	n = ram.Out(clk, addr(0, 0, 0, 0, 0, 0), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(50456)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+	ram := RAM512{}
+	clk := pin.New(pin.Inactive)
+	for i := range 512 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("setting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", 0, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+		})
 	}
-	clk.Activate()
-	n = ram.Out(clk, addr(0, 0, 1, 0, 1, 0), pin.New16(pin.Split16(54312)))
-	if !equals(pin.New16(pin.Split16(54312)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+
+	for i := range 512 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("unsetting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(0)))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+		})
 	}
-	clk.Deactivate()
-	n = ram.Out(clk, addr(0, 0, 1, 0, 1, 0), pin.New16(pin.Split16(54312)))
-	if !equals(pin.New16(pin.Split16(54312)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+}
+
+func TestRAM4K_Out(t *testing.T) {
+	equals := func(a [16]pin.Pin, b [16]pin.Signal) bool {
+		converted := [16]pin.Signal{}
+		for i := range a {
+			converted[i] = a[i].Signal()
+		}
+		return converted == b
 	}
-	n = ram.Out(clk, addr(0, 0, 0, 0, 1, 1), pin.New16(pin.Split16(12345)))
-	if !equals(pin.New16(pin.Split16(12345)), n) {
-		t.Errorf("expected %v but got %v", pin.New16(pin.Split16(0)), n)
+	address := func(n int) [12]pin.Pin {
+		return [12]pin.Pin{
+			pin.New(pin.Signal(n >> 0 & 1)),
+			pin.New(pin.Signal(n >> 1 & 1)),
+			pin.New(pin.Signal(n >> 2 & 1)),
+			pin.New(pin.Signal(n >> 3 & 1)),
+			pin.New(pin.Signal(n >> 4 & 1)),
+			pin.New(pin.Signal(n >> 5 & 1)),
+			pin.New(pin.Signal(n >> 6 & 1)),
+			pin.New(pin.Signal(n >> 7 & 1)),
+			pin.New(pin.Signal(n >> 8 & 1)),
+			pin.New(pin.Signal(n >> 9 & 1)),
+			pin.New(pin.Signal(n >> 10 & 1)),
+			pin.New(pin.Signal(n >> 11 & 1)),
+		}
+	}
+	ram := RAM4K{}
+	clk := pin.New(pin.Inactive)
+	for i := range 4096 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("setting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", 0, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+		})
+	}
+
+	for i := range 4096 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("unsetting address %v", addr), func(t *testing.T) {
+			clk.Deactivate()
+			n := ram.Out(clk, addr, pin.New16(pin.Split16(uint16(i))))
+			if !equals(pin.New16(pin.Split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Activate()
+			n = ram.Out(clk, addr, pin.New16(pin.Split16(0)))
+			if !equals(pin.New16(pin.Split16(0)), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+			clk.Deactivate()
+		})
 	}
 }

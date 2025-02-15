@@ -86,3 +86,49 @@ func (r *RAM64) Out(clk pin.Pin, addr [6]pin.Pin, in [16]pin.Pin) [16]pin.Signal
 		r.Chips[7].Out(pin.New(hl), nxt, in),
 	)
 }
+
+type RAM512 struct {
+	Chips [8]RAM64
+}
+
+func (r *RAM512) Out(clk pin.Pin, addr [9]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
+	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
+		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
+		clk.Signal(),
+	)
+	nxt := [6]pin.Pin{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8]}
+	return gate.Mux8Way16(
+		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
+		r.Chips[0].Out(pin.New(al), nxt, in),
+		r.Chips[1].Out(pin.New(bl), nxt, in),
+		r.Chips[2].Out(pin.New(cl), nxt, in),
+		r.Chips[3].Out(pin.New(dl), nxt, in),
+		r.Chips[4].Out(pin.New(el), nxt, in),
+		r.Chips[5].Out(pin.New(fl), nxt, in),
+		r.Chips[6].Out(pin.New(gl), nxt, in),
+		r.Chips[7].Out(pin.New(hl), nxt, in),
+	)
+}
+
+type RAM4K struct {
+	Chips [8]RAM512
+}
+
+func (r *RAM4K) Out(clk pin.Pin, addr [12]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
+	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
+		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
+		clk.Signal(),
+	)
+	nxt := [9]pin.Pin{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11]}
+	return gate.Mux8Way16(
+		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
+		r.Chips[0].Out(pin.New(al), nxt, in),
+		r.Chips[1].Out(pin.New(bl), nxt, in),
+		r.Chips[2].Out(pin.New(cl), nxt, in),
+		r.Chips[3].Out(pin.New(dl), nxt, in),
+		r.Chips[4].Out(pin.New(el), nxt, in),
+		r.Chips[5].Out(pin.New(fl), nxt, in),
+		r.Chips[6].Out(pin.New(gl), nxt, in),
+		r.Chips[7].Out(pin.New(hl), nxt, in),
+	)
+}
