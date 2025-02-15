@@ -338,3 +338,67 @@ func TestRAM16K_Out(t *testing.T) {
 		})
 	}
 }
+
+func TestCounter_Out(t *testing.T) {
+	t.Run("when load is set then sets value", func(t *testing.T) {
+		ctr := Counter{}
+		clk, inc, rst := pin.New(pin.Inactive), pin.New(pin.Inactive), pin.New(pin.Inactive)
+		clk.Activate()
+		out := ctr.Out(clk, inc, rst, pin.New16(pin.Split16(55467)))
+		if out != pin.Split16(55467) {
+			t.Errorf("expected %v but got %v", pin.Split16(55467), out)
+		}
+		clk.Deactivate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(55467) {
+			t.Errorf("expected %v but got %v", pin.Split16(55467), out)
+		}
+		clk.Activate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(33467)))
+		if out != pin.Split16(33467) {
+			t.Errorf("expected %v but got %v", pin.Split16(33467), out)
+		}
+		clk.Deactivate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(33467) {
+			t.Errorf("expected %v but got %v", pin.Split16(33467), out)
+		}
+		clk.Activate()
+	})
+	t.Run("when inc is set then increments value", func(t *testing.T) {
+		ctr := Counter{}
+		clk, inc, rst := pin.New(pin.Inactive), pin.New(pin.Inactive), pin.New(pin.Inactive)
+		out := ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(0) {
+			t.Errorf("expected %v but got %v", pin.Split16(0), out)
+		}
+		inc.Activate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(1) {
+			t.Errorf("expected %v but got %v", pin.Split16(1), out)
+		}
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(2) {
+			t.Errorf("expected %v but got %v", pin.Split16(2), out)
+		}
+	})
+	t.Run("when rst is set then resets value", func(t *testing.T) {
+		ctr := Counter{}
+		clk, inc, rst := pin.New(pin.Inactive), pin.New(pin.Inactive), pin.New(pin.Inactive)
+		out := ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(0) {
+			t.Errorf("expected %v but got %v", pin.Split16(0), out)
+		}
+		clk.Activate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(5123)))
+		if out != pin.Split16(5123) {
+			t.Errorf("expected %v but got %v", pin.Split16(5123), out)
+		}
+		clk.Deactivate()
+		rst.Activate()
+		out = ctr.Out(clk, inc, rst, pin.New16(pin.Split16(0)))
+		if out != pin.Split16(0) {
+			t.Errorf("expected %v but got %v", pin.Split16(1), out)
+		}
+	})
+}

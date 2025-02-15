@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"github.com/crookdc/snack/internal/alu"
 	"github.com/crookdc/snack/internal/gate"
 	"github.com/crookdc/snack/internal/pin"
 )
@@ -150,4 +151,15 @@ func (r *RAM16K) Out(clk pin.Pin, addr [14]pin.Pin, in [16]pin.Pin) [16]pin.Sign
 		r.Chips[2].Out(pin.New(cl), nxt, in),
 		r.Chips[3].Out(pin.New(dl), nxt, in),
 	)
+}
+
+type Counter struct {
+	register Register
+}
+
+func (c *Counter) Out(clk pin.Pin, inc pin.Pin, rst pin.Pin, in [16]pin.Pin) [16]pin.Signal {
+	out := c.register.Out(clk, in)
+	out = alu.Adder16(out, [16]pin.Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, inc.Signal()})
+	out = gate.And16(out, pin.Expand16(gate.Not(rst.Signal())))
+	return c.register.Out(pin.New(pin.Active), pin.New16(out))
 }
