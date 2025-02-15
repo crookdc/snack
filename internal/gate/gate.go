@@ -139,9 +139,9 @@ func Mux2Way16(s pin.Signal, a, b [16]pin.Signal) [16]pin.Signal {
 	return Or16(And16(Not16(pin.Expand16(s)), a), And16(pin.Expand16(s), b))
 }
 
-// Mux2WaySig provides a multiplexer to two single bit inputs. More information on the multiplexer is given in the
+// Mux2Way1 provides a multiplexer to two single bit inputs. More information on the multiplexer is given in the
 // Mux2Way16 function comment.
-func Mux2WaySig(s pin.Signal, a, b pin.Signal) pin.Signal {
+func Mux2Way1(s pin.Signal, a, b pin.Signal) pin.Signal {
 	return Or(And(Not(s), a), And(s, b))
 }
 
@@ -160,38 +160,71 @@ func Mux8Way16(s [3]pin.Signal, a, b, c, d, e, f, g, h [16]pin.Signal) [16]pin.S
 	return Mux2Way16(s[0], abcd, efgh)
 }
 
-// Demux2Way16 provides a demultiplexer for an [16]pin.Signal and a binary selector represented by a single byte.
-func Demux2Way16(s pin.Signal, in [16]pin.Signal) (a, b [16]pin.Signal) {
+// DMux2Way16 provides a demultiplexer for an [16]pin.Signal and a binary selector represented by a single byte.
+func DMux2Way16(s pin.Signal, in [16]pin.Signal) (a, b [16]pin.Signal) {
 	a = And16(Not16(pin.Expand16(s)), in)
 	b = And16(pin.Expand16(s), in)
 	return a, b
 }
 
-// Demux4Way16 provides a demultiplexer for 4 outputs based on a 2-byte selector.
-func Demux4Way16(s [2]pin.Signal, in [16]pin.Signal) (a, b, c, d [16]pin.Signal) {
+// DMux2Way1 provides a demultiplexer for a pin.Signal and a binary selector represented by a single byte.
+func DMux2Way1(s pin.Signal, in pin.Signal) (a, b pin.Signal) {
+	a = And(Not(s), in)
+	b = And(s, in)
+	return a, b
+}
+
+// DMux4Way16 provides a demultiplexer for 4 outputs based on a 2-byte selector.
+func DMux4Way16(s [2]pin.Signal, in [16]pin.Signal) (a, b, c, d [16]pin.Signal) {
 	sh := pin.Expand16(s[0])
-	a, b = Demux2Way16(s[1], in)
+	a, b = DMux2Way16(s[1], in)
 	a = And16(Not16(sh), a)
 	b = And16(Not16(sh), b)
-	c, d = Demux2Way16(s[1], in)
+	c, d = DMux2Way16(s[1], in)
 	c = And16(sh, c)
 	d = And16(sh, d)
 	return a, b, c, d
 }
 
-// Demux8Way16 provides a demultiplexer for 8 outputs based on a 3-byte selector.
-func Demux8Way16(s [3]pin.Signal, in [16]pin.Signal) (a, b, c, d, e, f, g, h [16]pin.Signal) {
+// DMux4Way1 provides a de-multiplexer for 4 outputs based on a 2-byte selector.
+func DMux4Way1(s [2]pin.Signal, in pin.Signal) (a, b, c, d pin.Signal) {
+	a, b = DMux2Way1(s[1], in)
+	a = And(Not(s[0]), a)
+	b = And(Not(s[0]), b)
+	c, d = DMux2Way1(s[1], in)
+	c = And(s[0], c)
+	d = And(s[0], d)
+	return a, b, c, d
+}
+
+// DMux8Way16 provides a de-multiplexer for 8 outputs based on a 3-byte selector.
+func DMux8Way16(s [3]pin.Signal, in [16]pin.Signal) (a, b, c, d, e, f, g, h [16]pin.Signal) {
 	sh := pin.Expand16(s[0])
-	a, b, c, d = Demux4Way16([2]pin.Signal{s[1], s[2]}, in)
+	a, b, c, d = DMux4Way16([2]pin.Signal{s[1], s[2]}, in)
 	a = And16(Not16(sh), a)
 	b = And16(Not16(sh), b)
 	c = And16(Not16(sh), c)
 	d = And16(Not16(sh), d)
-	e, f, g, h = Demux4Way16([2]pin.Signal{s[1], s[2]}, in)
+	e, f, g, h = DMux4Way16([2]pin.Signal{s[1], s[2]}, in)
 	e = And16(sh, e)
 	f = And16(sh, f)
 	g = And16(sh, g)
 	h = And16(sh, h)
+	return a, b, c, d, e, f, g, h
+}
+
+// DMux8Way1 provides a de-multiplexer for 8 outputs based on a 3-byte selector.
+func DMux8Way1(s [3]pin.Signal, in pin.Signal) (a, b, c, d, e, f, g, h pin.Signal) {
+	a, b, c, d = DMux4Way1([2]pin.Signal{s[1], s[2]}, in)
+	a = And(Not(s[0]), a)
+	b = And(Not(s[0]), b)
+	c = And(Not(s[0]), c)
+	d = And(Not(s[0]), d)
+	e, f, g, h = DMux4Way1([2]pin.Signal{s[1], s[2]}, in)
+	e = And(s[0], e)
+	f = And(s[0], f)
+	g = And(s[0], g)
+	h = And(s[0], h)
 	return a, b, c, d, e, f, g, h
 }
 

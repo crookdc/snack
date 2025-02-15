@@ -20,6 +20,14 @@ func Split16(n uint16) [16]Signal {
 	return res
 }
 
+func New16(n [16]Signal) [16]Pin {
+	p := [16]Pin{}
+	for i := range 16 {
+		p[i] = New(n[i])
+	}
+	return p
+}
+
 // Join16 transforms a Signal slice of length 16 to a 16-bit integer
 func Join16(n [16]Signal) uint16 {
 	res := uint16(0)
