@@ -43,10 +43,14 @@ func (r *Register) Out(clk pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	}
 }
 
+// RAM8 provides volatile storage of 8 words (16-bit values) that can be addressed with 3 pins.
 type RAM8 struct {
 	Registers [8]Register
 }
 
+// Out either sets and returns or just returns the value for the provided address. When the clk pin is active the in
+// value is set on the provided address and then returned. When the clk pin is inactive the value on the given
+// address is just returned.
 func (r *RAM8) Out(clk pin.Pin, addr [3]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
 		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
@@ -65,10 +69,14 @@ func (r *RAM8) Out(clk pin.Pin, addr [3]pin.Pin, in [16]pin.Pin) [16]pin.Signal 
 	)
 }
 
+// RAM64 provides volatile storage of 64 words (16-bit values) that can be addressed with 6 pins.
 type RAM64 struct {
 	Chips [8]RAM8
 }
 
+// Out either sets and returns or just returns the value for the provided address. When the clk pin is active the in
+// value is set on the provided address and then returned. When the clk pin is inactive the value on the given
+// address is just returned.
 func (r *RAM64) Out(clk pin.Pin, addr [6]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
 		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
@@ -88,10 +96,14 @@ func (r *RAM64) Out(clk pin.Pin, addr [6]pin.Pin, in [16]pin.Pin) [16]pin.Signal
 	)
 }
 
+// RAM512 provides volatile storage of 512 words (16-bit values) that can be addressed with 9 pins.
 type RAM512 struct {
 	Chips [8]RAM64
 }
 
+// Out either sets and returns or just returns the value for the provided address. When the clk pin is active the in
+// value is set on the provided address and then returned. When the clk pin is inactive the value on the given
+// address is just returned.
 func (r *RAM512) Out(clk pin.Pin, addr [9]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
 		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
@@ -111,10 +123,14 @@ func (r *RAM512) Out(clk pin.Pin, addr [9]pin.Pin, in [16]pin.Pin) [16]pin.Signa
 	)
 }
 
+// RAM4K provides volatile storage of 4096 words (16-bit values) that can be addressed with 12 pins.
 type RAM4K struct {
 	Chips [8]RAM512
 }
 
+// Out either sets and returns or just returns the value for the provided address. When the clk pin is active the in
+// value is set on the provided address and then returned. When the clk pin is inactive the value on the given
+// address is just returned.
 func (r *RAM4K) Out(clk pin.Pin, addr [12]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	al, bl, cl, dl, el, fl, gl, hl := gate.DMux8Way1(
 		[3]pin.Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
@@ -134,10 +150,14 @@ func (r *RAM4K) Out(clk pin.Pin, addr [12]pin.Pin, in [16]pin.Pin) [16]pin.Signa
 	)
 }
 
+// RAM16K provides volatile storage of 16 384 words (16-bit values) that can be addressed with 14 pins.
 type RAM16K struct {
 	Chips [4]RAM4K
 }
 
+// Out either sets and returns or just returns the value for the provided address. When the clk pin is active the in
+// value is set on the provided address and then returned. When the clk pin is inactive the value on the given
+// address is just returned.
 func (r *RAM16K) Out(clk pin.Pin, addr [14]pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	al, bl, cl, dl := gate.DMux4Way1(
 		[2]pin.Signal{addr[0].Signal(), addr[1].Signal()},
@@ -153,13 +173,17 @@ func (r *RAM16K) Out(clk pin.Pin, addr [14]pin.Pin, in [16]pin.Pin) [16]pin.Sign
 	)
 }
 
+// Counter provides a chip with the ability to store a single word as well as increment its value and reset it to 0.
 type Counter struct {
 	register Register
 }
 
+// Out allows setting of the counters current value by providing a value in the 16-pin parameter `in` and setting the
+// clk to an active pin. To increment the stored value the inc pin must only be set. Finally, to reset the value the rst
+// pin must be active.
 func (c *Counter) Out(clk pin.Pin, inc pin.Pin, rst pin.Pin, in [16]pin.Pin) [16]pin.Signal {
 	out := c.register.Out(clk, in)
-	out = alu.Adder16(out, [16]pin.Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, inc.Signal()})
+	out = alu.Adder16(out, [16]pin.Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, gate.And(gate.Not(clk.Signal()), inc.Signal())})
 	out = gate.And16(out, pin.Expand16(gate.Not(rst.Signal())))
 	return c.register.Out(pin.New(pin.Active), pin.New16(out))
 }
