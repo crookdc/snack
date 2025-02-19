@@ -1,36 +1,35 @@
-package gate
+package chip
 
 import (
 	"fmt"
-	"github.com/crookdc/snack/internal/pin"
 	"testing"
 )
 
 func TestNotAnd(t *testing.T) {
 	var assertions = []struct {
-		a pin.Signal
-		b pin.Signal
-		r pin.Signal
+		a Signal
+		b Signal
+		r Signal
 	}{
 		{
-			a: pin.Inactive,
-			b: pin.Inactive,
-			r: pin.Active,
+			a: Inactive,
+			b: Inactive,
+			r: Active,
 		},
 		{
-			a: pin.Inactive,
-			b: pin.Active,
-			r: pin.Inactive,
+			a: Inactive,
+			b: Active,
+			r: Inactive,
 		},
 		{
-			a: pin.Active,
-			b: pin.Inactive,
-			r: pin.Inactive,
+			a: Active,
+			b: Inactive,
+			r: Inactive,
 		},
 		{
-			a: pin.Active,
-			b: pin.Active,
-			r: pin.Inactive,
+			a: Active,
+			b: Active,
+			r: Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -88,8 +87,8 @@ func TestNotAndUint16(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := NotAnd16(pin.Split16(a.a), pin.Split16(a.b))
-			if r != pin.Split16(a.r) {
+			r := NotAnd16(split16(a.a), split16(a.b))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
 			}
 		})
@@ -98,16 +97,16 @@ func TestNotAndUint16(t *testing.T) {
 
 func TestNot(t *testing.T) {
 	var assertions = []struct {
-		a pin.Signal
-		r pin.Signal
+		a Signal
+		r Signal
 	}{
 		{
-			a: pin.Inactive,
-			r: pin.Active,
+			a: Inactive,
+			r: Active,
 		},
 		{
-			a: pin.Active,
-			r: pin.Inactive,
+			a: Active,
+			r: Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -145,8 +144,8 @@ func TestNotUint16(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v", a.a), func(t *testing.T) {
-			r := Not16(pin.Split16(a.a))
-			if r != pin.Split16(a.r) {
+			r := Not16(split16(a.a))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v but got %v", a.r, a.a, r)
 			}
 		})
@@ -155,29 +154,29 @@ func TestNotUint16(t *testing.T) {
 
 func TestAnd(t *testing.T) {
 	var assertions = []struct {
-		a pin.Signal
-		b pin.Signal
-		r pin.Signal
+		a Signal
+		b Signal
+		r Signal
 	}{
 		{
-			a: pin.Inactive,
-			b: pin.Inactive,
-			r: pin.Inactive,
+			a: Inactive,
+			b: Inactive,
+			r: Inactive,
 		},
 		{
-			a: pin.Inactive,
-			b: pin.Active,
-			r: pin.Inactive,
+			a: Inactive,
+			b: Active,
+			r: Inactive,
 		},
 		{
-			a: pin.Active,
-			b: pin.Inactive,
-			r: pin.Inactive,
+			a: Active,
+			b: Inactive,
+			r: Inactive,
 		},
 		{
-			a: pin.Active,
-			b: pin.Active,
-			r: pin.Active,
+			a: Active,
+			b: Active,
+			r: Active,
 		},
 	}
 	for _, a := range assertions {
@@ -220,8 +219,8 @@ func TestAndUint16(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := And16(pin.Split16(a.a), pin.Split16(a.b))
-			if r != pin.Split16(a.r) {
+			r := And16(split16(a.a), split16(a.b))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", r, a.r, a.a, a.b)
 			}
 		})
@@ -230,29 +229,29 @@ func TestAndUint16(t *testing.T) {
 
 func TestOr(t *testing.T) {
 	var assertions = []struct {
-		a pin.Signal
-		b pin.Signal
-		r pin.Signal
+		a Signal
+		b Signal
+		r Signal
 	}{
 		{
-			a: pin.Inactive,
-			b: pin.Inactive,
-			r: pin.Inactive,
+			a: Inactive,
+			b: Inactive,
+			r: Inactive,
 		},
 		{
-			a: pin.Inactive,
-			b: pin.Active,
-			r: pin.Active,
+			a: Inactive,
+			b: Active,
+			r: Active,
 		},
 		{
-			a: pin.Active,
-			b: pin.Inactive,
-			r: pin.Active,
+			a: Active,
+			b: Inactive,
+			r: Active,
 		},
 		{
-			a: pin.Active,
-			b: pin.Active,
-			r: pin.Active,
+			a: Active,
+			b: Active,
+			r: Active,
 		},
 	}
 	for _, a := range assertions {
@@ -295,8 +294,8 @@ func TestOrUint16(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := Or16(pin.Split16(a.a), pin.Split16(a.b))
-			if r != pin.Split16(a.r) {
+			r := Or16(split16(a.a), split16(a.b))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
 			}
 		})
@@ -305,29 +304,29 @@ func TestOrUint16(t *testing.T) {
 
 func TestXor(t *testing.T) {
 	var assertions = []struct {
-		a pin.Signal
-		b pin.Signal
-		r pin.Signal
+		a Signal
+		b Signal
+		r Signal
 	}{
 		{
-			a: pin.Inactive,
-			b: pin.Inactive,
-			r: pin.Inactive,
+			a: Inactive,
+			b: Inactive,
+			r: Inactive,
 		},
 		{
-			a: pin.Inactive,
-			b: pin.Active,
-			r: pin.Active,
+			a: Inactive,
+			b: Active,
+			r: Active,
 		},
 		{
-			a: pin.Active,
-			b: pin.Inactive,
-			r: pin.Active,
+			a: Active,
+			b: Inactive,
+			r: Active,
 		},
 		{
-			a: pin.Active,
-			b: pin.Active,
-			r: pin.Inactive,
+			a: Active,
+			b: Active,
+			r: Inactive,
 		},
 	}
 	for _, a := range assertions {
@@ -365,8 +364,8 @@ func TestXorUint16(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := Xor16(pin.Split16(a.a), pin.Split16(a.b))
-			if r != pin.Split16(a.r) {
+			r := Xor16(split16(a.a), split16(a.b))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
 			}
 		})
@@ -377,62 +376,62 @@ func TestMux2Way16(t *testing.T) {
 	var assertions = []struct {
 		a   uint16
 		b   uint16
-		sel pin.Signal
+		sel Signal
 		r   uint16
 	}{
 		{
 			a:   55,
 			b:   96,
-			sel: pin.Inactive,
+			sel: Inactive,
 			r:   55,
 		},
 		{
 			a:   0,
 			b:   53,
-			sel: pin.Inactive,
+			sel: Inactive,
 			r:   0,
 		},
 		{
 			a:   255,
 			b:   12,
-			sel: pin.Inactive,
+			sel: Inactive,
 			r:   255,
 		},
 		{
 			a:   0,
 			b:   0,
-			sel: pin.Inactive,
+			sel: Inactive,
 			r:   0,
 		},
 		{
 			a:   12,
 			b:   0,
-			sel: pin.Active,
+			sel: Active,
 			r:   0,
 		},
 		{
 			a:   123,
 			b:   99,
-			sel: pin.Active,
+			sel: Active,
 			r:   99,
 		},
 		{
 			a:   0,
 			b:   123,
-			sel: pin.Active,
+			sel: Active,
 			r:   123,
 		},
 		{
 			a:   0,
 			b:   0,
-			sel: pin.Active,
+			sel: Active,
 			r:   0,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given a is %v, b is %v and sel is %v", a.a, a.b, a.sel), func(t *testing.T) {
-			r := Mux2Way16(a.sel, pin.Split16(a.a), pin.Split16(a.b))
-			if r != pin.Split16(a.r) {
+			r := Mux2Way16(a.sel, split16(a.a), split16(a.b))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with a: %v, b: %v and sel: %v but got %v", a.r, a.a, a.b, a.sel, r)
 			}
 		})
@@ -445,7 +444,7 @@ func TestMux4Way16(t *testing.T) {
 		b uint16
 		c uint16
 		d uint16
-		s [2]pin.Signal
+		s [2]Signal
 		r uint16
 	}
 	var assertions = []assertion{
@@ -454,7 +453,7 @@ func TestMux4Way16(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]pin.Signal{pin.Inactive, pin.Inactive},
+			s: [2]Signal{Inactive, Inactive},
 			r: 10,
 		},
 		{
@@ -462,7 +461,7 @@ func TestMux4Way16(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]pin.Signal{pin.Inactive, pin.Active},
+			s: [2]Signal{Inactive, Active},
 			r: 20,
 		},
 		{
@@ -470,7 +469,7 @@ func TestMux4Way16(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]pin.Signal{pin.Active, pin.Inactive},
+			s: [2]Signal{Active, Inactive},
 			r: 30,
 		},
 		{
@@ -478,14 +477,14 @@ func TestMux4Way16(t *testing.T) {
 			b: 20,
 			c: 30,
 			d: 40,
-			s: [2]pin.Signal{pin.Active, pin.Active},
+			s: [2]Signal{Active, Active},
 			r: 40,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given s: %v", a.s), func(t *testing.T) {
-			r := Mux4Way16(a.s, pin.Split16(a.a), pin.Split16(a.b), pin.Split16(a.c), pin.Split16(a.d))
-			if r != pin.Split16(a.r) {
+			r := Mux4Way16(a.s, split16(a.a), split16(a.b), split16(a.c), split16(a.d))
+			if r != split16(a.r) {
 				t.Errorf("expected %v given s: %v but got %v", a.r, a.s, r)
 			}
 		})
@@ -503,7 +502,7 @@ func TestMux8Way16(t *testing.T) {
 		g uint16
 		h uint16
 
-		s [3]pin.Signal
+		s [3]Signal
 		r uint16
 	}
 	var assertions = []assertion{
@@ -517,7 +516,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Inactive},
+			s: [3]Signal{Inactive, Inactive, Inactive},
 			r: 10,
 		},
 		{
@@ -530,7 +529,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Active},
+			s: [3]Signal{Inactive, Inactive, Active},
 			r: 20,
 		},
 		{
@@ -543,7 +542,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Inactive, pin.Active, pin.Inactive},
+			s: [3]Signal{Inactive, Active, Inactive},
 			r: 30,
 		},
 		{
@@ -556,7 +555,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Inactive, pin.Active, pin.Active},
+			s: [3]Signal{Inactive, Active, Active},
 			r: 40,
 		},
 		{
@@ -569,7 +568,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Active, pin.Inactive, pin.Inactive},
+			s: [3]Signal{Active, Inactive, Inactive},
 			r: 50,
 		},
 		{
@@ -582,7 +581,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Active, pin.Inactive, pin.Active},
+			s: [3]Signal{Active, Inactive, Active},
 			r: 60,
 		},
 		{
@@ -595,7 +594,7 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Active, pin.Active, pin.Inactive},
+			s: [3]Signal{Active, Active, Inactive},
 			r: 70,
 		},
 		{
@@ -608,14 +607,14 @@ func TestMux8Way16(t *testing.T) {
 			g: 70,
 			h: 80,
 
-			s: [3]pin.Signal{pin.Active, pin.Active, pin.Active},
+			s: [3]Signal{Active, Active, Active},
 			r: 80,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("with s: %v", a.s), func(t *testing.T) {
-			r := Mux8Way16(a.s, pin.Split16(a.a), pin.Split16(a.b), pin.Split16(a.c), pin.Split16(a.d), pin.Split16(a.e), pin.Split16(a.f), pin.Split16(a.g), pin.Split16(a.h))
-			if r != pin.Split16(a.r) {
+			r := Mux8Way16(a.s, split16(a.a), split16(a.b), split16(a.c), split16(a.d), split16(a.e), split16(a.f), split16(a.g), split16(a.h))
+			if r != split16(a.r) {
 				t.Errorf("expected %v with s: %v got got %v", a.r, a.s, r)
 			}
 		})
@@ -625,43 +624,43 @@ func TestMux8Way16(t *testing.T) {
 func TestDemux2Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  pin.Signal
+		s  Signal
 		a  uint16
 		b  uint16
 	}
 	var assertions = []assertion{
 		{
 			in: 0,
-			s:  pin.Inactive,
+			s:  Inactive,
 			a:  0,
 			b:  0,
 		},
 		{
 			in: 65_535,
-			s:  pin.Inactive,
+			s:  Inactive,
 			a:  65_535,
 			b:  0,
 		},
 		{
 			in: 256,
-			s:  pin.Active,
+			s:  Active,
 			a:  0,
 			b:  256,
 		},
 		{
 			in: 0,
-			s:  pin.Active,
+			s:  Active,
 			a:  0,
 			b:  0,
 		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in is %v and s is %v", a.in, a.s), func(t *testing.T) {
-			ar, br := DMux2Way16(a.s, pin.Split16(a.in))
-			if ar != pin.Split16(a.a) {
+			ar, br := DMux2Way16(a.s, split16(a.in))
+			if ar != split16(a.a) {
 				t.Errorf("expected ar %v but got %v", a.a, ar)
 			}
-			if br != pin.Split16(a.b) {
+			if br != split16(a.b) {
 				t.Errorf("expected br %v but got %v", a.b, br)
 			}
 		})
@@ -671,7 +670,7 @@ func TestDemux2Way(t *testing.T) {
 func TestDemux4Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  [2]pin.Signal
+		s  [2]Signal
 		a  uint16
 		b  uint16
 		c  uint16
@@ -680,7 +679,7 @@ func TestDemux4Way(t *testing.T) {
 	var assertions = []assertion{
 		{
 			in: 65_313,
-			s:  [2]pin.Signal{pin.Inactive, pin.Inactive},
+			s:  [2]Signal{Inactive, Inactive},
 			a:  65_313,
 			b:  0,
 			c:  0,
@@ -688,7 +687,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 23_230,
-			s:  [2]pin.Signal{pin.Inactive, pin.Active},
+			s:  [2]Signal{Inactive, Active},
 			a:  0,
 			b:  23_230,
 			c:  0,
@@ -696,7 +695,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 9012,
-			s:  [2]pin.Signal{pin.Active, pin.Inactive},
+			s:  [2]Signal{Active, Inactive},
 			a:  0,
 			b:  0,
 			c:  9012,
@@ -704,7 +703,7 @@ func TestDemux4Way(t *testing.T) {
 		},
 		{
 			in: 1234,
-			s:  [2]pin.Signal{pin.Active, pin.Active},
+			s:  [2]Signal{Active, Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -713,17 +712,17 @@ func TestDemux4Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr := DMux4Way16(a.s, pin.Split16(a.in))
-			if ar != pin.Split16(a.a) {
+			ar, br, cr, dr := DMux4Way16(a.s, split16(a.in))
+			if ar != split16(a.a) {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
-			if br != pin.Split16(a.b) {
+			if br != split16(a.b) {
 				t.Errorf("expected b %v but got %v", a.b, br)
 			}
-			if cr != pin.Split16(a.c) {
+			if cr != split16(a.c) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
-			if dr != pin.Split16(a.d) {
+			if dr != split16(a.d) {
 				t.Errorf("expected d %v but got %v", a.d, dr)
 			}
 		})
@@ -733,7 +732,7 @@ func TestDemux4Way(t *testing.T) {
 func TestDemux8Way(t *testing.T) {
 	type assertion struct {
 		in uint16
-		s  [3]pin.Signal
+		s  [3]Signal
 		a  uint16
 		b  uint16
 		c  uint16
@@ -746,7 +745,7 @@ func TestDemux8Way(t *testing.T) {
 	var assertions = []assertion{
 		{
 			in: 65_313,
-			s:  [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Inactive},
+			s:  [3]Signal{Inactive, Inactive, Inactive},
 			a:  65_313,
 			b:  0,
 			c:  0,
@@ -758,7 +757,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 56_555,
-			s:  [3]pin.Signal{pin.Inactive, pin.Inactive, pin.Active},
+			s:  [3]Signal{Inactive, Inactive, Active},
 			a:  0,
 			b:  56_555,
 			c:  0,
@@ -770,7 +769,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 1234,
-			s:  [3]pin.Signal{pin.Inactive, pin.Active, pin.Inactive},
+			s:  [3]Signal{Inactive, Active, Inactive},
 			a:  0,
 			b:  0,
 			c:  1234,
@@ -782,7 +781,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 9999,
-			s:  [3]pin.Signal{pin.Inactive, pin.Active, pin.Active},
+			s:  [3]Signal{Inactive, Active, Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -794,7 +793,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 8989,
-			s:  [3]pin.Signal{pin.Active, pin.Inactive, pin.Inactive},
+			s:  [3]Signal{Active, Inactive, Inactive},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -806,7 +805,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 13372,
-			s:  [3]pin.Signal{pin.Active, pin.Inactive, pin.Active},
+			s:  [3]Signal{Active, Inactive, Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -818,7 +817,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 12341,
-			s:  [3]pin.Signal{pin.Active, pin.Active, pin.Inactive},
+			s:  [3]Signal{Active, Active, Inactive},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -830,7 +829,7 @@ func TestDemux8Way(t *testing.T) {
 		},
 		{
 			in: 4455,
-			s:  [3]pin.Signal{pin.Active, pin.Active, pin.Active},
+			s:  [3]Signal{Active, Active, Active},
 			a:  0,
 			b:  0,
 			c:  0,
@@ -843,29 +842,29 @@ func TestDemux8Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr, er, fr, gr, hr := DMux8Way16(a.s, pin.Split16(a.in))
-			if ar != pin.Split16(a.a) {
+			ar, br, cr, dr, er, fr, gr, hr := DMux8Way16(a.s, split16(a.in))
+			if ar != split16(a.a) {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
-			if br != pin.Split16(a.b) {
+			if br != split16(a.b) {
 				t.Errorf("expected b %v but got %v", a.b, br)
 			}
-			if cr != pin.Split16(a.c) {
+			if cr != split16(a.c) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
-			if dr != pin.Split16(a.d) {
+			if dr != split16(a.d) {
 				t.Errorf("expected d %v but got %v", a.d, dr)
 			}
-			if er != pin.Split16(a.e) {
+			if er != split16(a.e) {
 				t.Errorf("expected e %v but got %v", a.e, er)
 			}
-			if fr != pin.Split16(a.f) {
+			if fr != split16(a.f) {
 				t.Errorf("expected f %v but got %v", a.f, fr)
 			}
-			if gr != pin.Split16(a.g) {
+			if gr != split16(a.g) {
 				t.Errorf("expected g %v but got %v", a.g, gr)
 			}
-			if hr != pin.Split16(a.h) {
+			if hr != split16(a.h) {
 				t.Errorf("expected h %v but got %v", a.h, hr)
 			}
 		})
@@ -875,23 +874,23 @@ func TestDemux8Way(t *testing.T) {
 func TestDFF(t *testing.T) {
 	dff := &DFF{}
 	dff.In.Activate()
-	if bit := dff.Out(pin.Inactive); bit == pin.Active {
+	if bit := dff.Out(Inactive); bit == Active {
 		t.Errorf("expected dff to be unset before tick")
 	}
-	if bit := dff.Out(pin.Active); bit == pin.Inactive {
+	if bit := dff.Out(Active); bit == Inactive {
 		t.Errorf("expected dff to be set after tick")
 	}
 	dff.In.Deactivate()
-	if bit := dff.Out(pin.Inactive); bit == pin.Inactive {
+	if bit := dff.Out(Inactive); bit == Inactive {
 		t.Errorf("expected dff to be set before tick")
 	}
-	if bit := dff.Out(pin.Active); bit == pin.Active {
+	if bit := dff.Out(Active); bit == Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	if bit := dff.Out(pin.Active); bit == pin.Active {
+	if bit := dff.Out(Active); bit == Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
-	if bit := dff.Out(pin.Active); bit == pin.Active {
+	if bit := dff.Out(Active); bit == Active {
 		t.Errorf("expected dff to be unset after tick")
 	}
 }

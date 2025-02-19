@@ -1,4 +1,4 @@
-package pin
+package chip
 
 type Signal uint8
 
@@ -11,8 +11,8 @@ type Pin struct {
 	n Signal
 }
 
-// Split16 transforms a 16-bit integer to its bit representation in the Signal abstraction.
-func Split16(n uint16) [16]Signal {
+// split16 transforms a 16-bit integer to its bit representation in the Signal abstraction.
+func split16(n uint16) [16]Signal {
 	res := [16]Signal{}
 	for i := range 16 {
 		res[i] = Signal(uint8(n>>(15-i)) & 1)
@@ -20,34 +20,25 @@ func Split16(n uint16) [16]Signal {
 	return res
 }
 
-func New16(n [16]Signal) [16]Pin {
+func NewPin16(n [16]Signal) [16]Pin {
 	p := [16]Pin{}
 	for i := range 16 {
-		p[i] = New(n[i])
+		p[i] = NewPin(n[i])
 	}
 	return p
 }
 
-// Join16 transforms a Signal slice of length 16 to a 16-bit integer
-func Join16(n [16]Signal) uint16 {
-	res := uint16(0)
-	for i := range 16 {
-		res = res | (uint16(n[i]) << (15 - i))
-	}
-	return res
-}
-
-// Expand16 takes a single bit and expands its value to cover 16 bits. That is, if the bit value is 0 then a 16-bit
+// expand16 takes a single bit and expands its value to cover 16 bits. That is, if the bit value is 0 then a 16-bit
 // unsigned integer containing all zeroes is returned. If the input bit value is 1 then an unsigned 16-bit integer
 // containing all ones is returned.
-func Expand16(n Signal) [16]Signal {
+func expand16(n Signal) [16]Signal {
 	return [16]Signal{
 		n, n, n, n, n, n, n, n,
 		n, n, n, n, n, n, n, n,
 	}
 }
 
-func New(s Signal) Pin {
+func NewPin(s Signal) Pin {
 	return Pin{n: s}
 }
 

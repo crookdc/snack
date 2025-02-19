@@ -1,8 +1,7 @@
-package alu
+package chip
 
 import (
 	"fmt"
-	"github.com/crookdc/snack/internal/pin"
 	"testing"
 )
 
@@ -15,8 +14,8 @@ func TestALU_Call(t *testing.T) {
 	runner := func(t *testing.T, alu *ALU, assertions []assertion) {
 		for _, a := range assertions {
 			t.Run(fmt.Sprintf("given x: %v, y: %v ", a.x, a.y), func(t *testing.T) {
-				r := alu.Call(pin.Split16(a.x), pin.Split16(a.y))
-				if r != pin.Split16(a.r) {
+				r := alu.Call(split16(a.x), split16(a.y))
+				if r != split16(a.r) {
 					t.Errorf("expected %v but got %v", a.r, r)
 				}
 			})
@@ -24,12 +23,12 @@ func TestALU_Call(t *testing.T) {
 	}
 	t.Run("x + y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -57,12 +56,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x + 1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Active),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -83,12 +82,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x - 1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -109,12 +108,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("y - 1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -135,12 +134,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("y + 1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -161,12 +160,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x - y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -193,12 +192,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("y - x", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -225,12 +224,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("-x", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -247,12 +246,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("-y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -269,12 +268,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x & Y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Inactive),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -287,12 +286,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x | y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Active),
+			F:  NewPin(Inactive),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -305,12 +304,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("!x", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Inactive),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -323,12 +322,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("!y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Inactive),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -341,12 +340,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("x", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Inactive),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Inactive),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Inactive),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -364,12 +363,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("y", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Inactive),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Inactive),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Inactive),
+			NY: NewPin(Inactive),
+			F:  NewPin(Inactive),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -387,12 +386,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("-1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Active),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -410,12 +409,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("1", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Active),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Active),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Active),
+			ZX: NewPin(Active),
+			NX: NewPin(Active),
+			ZY: NewPin(Active),
+			NY: NewPin(Active),
+			F:  NewPin(Active),
+			NO: NewPin(Active),
 		}
 		runner(t, &alu, []assertion{
 			{
@@ -433,12 +432,12 @@ func TestALU_Call(t *testing.T) {
 
 	t.Run("0", func(t *testing.T) {
 		alu := ALU{
-			ZX: pin.New(pin.Active),
-			NX: pin.New(pin.Inactive),
-			ZY: pin.New(pin.Active),
-			NY: pin.New(pin.Inactive),
-			F:  pin.New(pin.Active),
-			NO: pin.New(pin.Inactive),
+			ZX: NewPin(Active),
+			NX: NewPin(Inactive),
+			ZY: NewPin(Active),
+			NY: NewPin(Inactive),
+			F:  NewPin(Active),
+			NO: NewPin(Inactive),
 		}
 		runner(t, &alu, []assertion{
 			{
