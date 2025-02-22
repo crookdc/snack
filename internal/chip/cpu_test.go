@@ -273,6 +273,16 @@ func TestCPU_Out(t *testing.T) {
 			omem:  split16(0xFFFF),
 			pc:    split15(1),
 		},
+		{
+			name:  "D, A = !A",
+			instr: NewPin16(split16(0b1110110001110000)),
+			ain:   NewPin16(split16(0xF00F)),
+			aout:  split16(0x0FF0),
+			dout:  split16(0x0FF0),
+			omem:  split16(0x0FF0),
+			addr:  split15(0xF00F),
+			pc:    split15(1),
+		},
 	}
 	for _, a := range assertions {
 		t.Run(a.name, func(t *testing.T) {
