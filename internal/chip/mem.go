@@ -167,16 +167,16 @@ func (r *RAM16K) Out(clk Pin, addr [14]Pin, in [16]Pin) [16]Signal {
 	)
 }
 
-// Counter provides a chip with the ability to store a single word as well as increment its value and reset it to 0.
-type Counter struct {
+// ProgramCounter provides a chip with the ability to store a single word as well as increment its value and reset it to 0.
+type ProgramCounter struct {
 	register Register
 }
 
 // Out allows setting of the counters current value by providing a value in the 16-pin parameter `in` and setting the
 // clk to an active pin. To increment the stored value the inc pin must only be set. Finally, to reset the value the rst
 // pin must be active.
-func (c *Counter) Out(clk Pin, inc Pin, rst Pin, in [16]Pin) [16]Signal {
-	out := c.register.Out(clk, in)
+func (c *ProgramCounter) Out(clk Pin, inc Pin, rst Pin, in [16]Pin) [16]Signal {
+	out := c.register.Out(clk, NewPin16(And16(read16(in), Not16(expand16(inc.Signal())))))
 	out = Adder16(out, [16]Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, And(Not(clk.Signal()), inc.Signal())})
 	out = And16(out, expand16(Not(And(Not(clk.Signal()), rst.Signal()))))
 	return c.register.Out(NewPin(Active), NewPin16(out))

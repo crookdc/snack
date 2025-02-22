@@ -14,7 +14,7 @@ func TestALU_Call(t *testing.T) {
 	runner := func(t *testing.T, alu *ALU, assertions []assertion) {
 		for _, a := range assertions {
 			t.Run(fmt.Sprintf("given x: %v, y: %v ", a.x, a.y), func(t *testing.T) {
-				r := alu.Call(split16(a.x), split16(a.y))
+				r := alu.Out(split16(a.x), split16(a.y))
 				if r != split16(a.r) {
 					t.Errorf("expected %v but got %v", a.r, r)
 				}

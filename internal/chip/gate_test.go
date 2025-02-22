@@ -723,7 +723,7 @@ func TestDemux4Way(t *testing.T) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
 			if dr != split16(a.d) {
-				t.Errorf("expected d %v but got %v", a.d, dr)
+				t.Errorf("expected dout %v but got %v", a.d, dr)
 			}
 		})
 	}
@@ -853,7 +853,7 @@ func TestDemux8Way(t *testing.T) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
 			if dr != split16(a.d) {
-				t.Errorf("expected d %v but got %v", a.d, dr)
+				t.Errorf("expected dout %v but got %v", a.d, dr)
 			}
 			if er != split16(a.e) {
 				t.Errorf("expected e %v but got %v", a.e, er)

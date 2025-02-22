@@ -11,11 +11,28 @@ type Pin struct {
 	n Signal
 }
 
+func read16(pins [16]Pin) [16]Signal {
+	sigs := [16]Signal{}
+	for i := range 16 {
+		sigs[i] = pins[i].Signal()
+	}
+	return sigs
+}
+
 // split16 transforms a 16-bit integer to its bit representation in the Signal abstraction.
 func split16(n uint16) [16]Signal {
 	res := [16]Signal{}
 	for i := range 16 {
 		res[i] = Signal(uint8(n>>(15-i)) & 1)
+	}
+	return res
+}
+
+// split15 transforms a 16-bit integer to its 15-bit representation in the Signal abstraction by omitting the MSB.
+func split15(n uint16) [15]Signal {
+	res := [15]Signal{}
+	for i := range 15 {
+		res[i] = Signal(uint8(n>>(14-i)) & 1)
 	}
 	return res
 }

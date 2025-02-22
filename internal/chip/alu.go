@@ -17,8 +17,8 @@ type ALU struct {
 	NO Pin
 }
 
-// Call performs operations on the provided inputs as outlined by the state of the ALU
-func (a *ALU) Call(x, y [16]Signal) [16]Signal {
+// Out is performing operations on the provided inputs as outlined by the state of the ALU
+func (a *ALU) Out(x, y [16]Signal) [16]Signal {
 	x = And16(x, expand16(Not(a.ZX.Signal())))
 	x = Xor16(x, expand16(a.NX.Signal()))
 
