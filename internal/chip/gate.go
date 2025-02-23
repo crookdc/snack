@@ -228,8 +228,8 @@ type DFF struct {
 	out Pin
 }
 
-func (d *DFF) Out(clk Signal) Signal {
-	if clk == Active {
+func (d *DFF) Out(load Signal) Signal {
+	if load == Active {
 		d.out = d.In
 	}
 	return d.out.Signal()

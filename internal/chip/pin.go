@@ -45,6 +45,14 @@ func NewPin16(n [16]Signal) [16]Pin {
 	return p
 }
 
+func NewPin15(n [15]Signal) [15]Pin {
+	p := [15]Pin{}
+	for i := range 15 {
+		p[i] = NewPin(n[i])
+	}
+	return p
+}
+
 // expand16 takes a single bit and expands its value to cover 16 bits. That is, if the bit value is 0 then a 16-bit
 // unsigned integer containing all zeroes is returned. If the input bit value is 1 then an unsigned 16-bit integer
 // containing all ones is returned.
