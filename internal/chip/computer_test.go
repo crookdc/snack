@@ -1,6 +1,7 @@
 package chip
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -526,6 +527,151 @@ func TestCPU_Out(t *testing.T) {
 			}
 			if a.addr != addr {
 				t.Errorf("expected addr to contain %v but found %v", a.addr, addr)
+			}
+		})
+	}
+}
+
+func TestMemory_Out(t *testing.T) {
+	ramAddress := func(n uint16) [14]Pin {
+		res := [14]Signal{}
+		for i := range 14 {
+			res[i] = Signal(uint8(n>>(13-i)) & 1)
+		}
+		p := [14]Pin{}
+		for i := range 14 {
+			p[i] = NewPin(res[i])
+		}
+		return p
+	}
+	var ramw = []struct {
+		address uint16
+		value   uint16
+		r       uint16
+	}{
+		{
+			address: 0,
+			value:   0xF0FF,
+			r:       0xF0FF,
+		},
+		{
+			address: 12345,
+			value:   0x0FFF,
+			r:       0x0FFF,
+		},
+		{
+			address: 16383,
+			value:   0xFFFF,
+			r:       0xFFFF,
+		},
+		{
+			address: 16384, // The address for this test is outside the RAM range
+			value:   0xFFFF,
+			r:       0,
+		},
+	}
+	for _, w := range ramw {
+		t.Run(fmt.Sprintf("writing %v to %v address", w.value, w.address), func(t *testing.T) {
+			mem := Memory{}
+			mem.Out(NewPin(Active), NewPin15(split15(w.address)), NewPin16(split16(w.value)))
+			n := mem.ram.Out(NewPin(Inactive), ramAddress(w.address), [16]Pin{})
+			if n != split16(w.r) {
+				t.Errorf("expected RAM n to be %v but got %v", split16(w.r), n)
+			}
+		})
+	}
+
+	screenAddress := func(n uint16) [13]Pin {
+		res := [13]Signal{}
+		for i := range 13 {
+			res[i] = Signal(uint8(n>>(12-i)) & 1)
+		}
+		p := [13]Pin{}
+		for i := range 13 {
+			p[i] = NewPin(res[i])
+		}
+		return p
+	}
+	var screenw = []struct {
+		addr  uint16
+		value uint16
+		r     uint16
+	}{
+		{
+			addr:  0b011_0100_0110_0011,
+			value: 0xF0FF,
+			r:     0,
+		},
+		{
+			addr:  0b100_0100_0110_0011,
+			value: 0x0FFF,
+			r:     0x0FFF,
+		},
+		{
+			addr:  0b101_1100_0110_0011,
+			value: 0xFFFF,
+			r:     0xFFFF,
+		},
+		{
+			addr:  0b111_1100_0110_0011,
+			value: 0xFFFF,
+			r:     0,
+		},
+	}
+	for _, w := range screenw {
+		t.Run(fmt.Sprintf("writing %v to %v address", w.value, w.addr), func(t *testing.T) {
+			mem := Memory{}
+			mem.Out(NewPin(Active), NewPin15(split15(w.addr)), NewPin16(split16(w.value)))
+			n := mem.screen.Out(NewPin(Inactive), screenAddress(w.addr), [16]Pin{})
+			if n != split16(w.r) {
+				t.Errorf("expected screen n to be %v but got %v", split16(w.r), n)
+			}
+		})
+	}
+
+	t.Run("reading and writing keyboard", func(t *testing.T) {
+		addr := uint16(24576)
+		mem := Memory{}
+		mem.Out(NewPin(Active), NewPin15(split15(addr)), NewPin16(split16(1012)))
+		n := mem.keyboard.Out(NewPin(Inactive), [16]Pin{})
+		if n != split16(1012) {
+			t.Errorf("expected keyboard to be %v but got %v", split16(1012), n)
+		}
+	})
+}
+
+func TestROM32K_Out(t *testing.T) {
+	equals := func(a [16]Pin, b [16]Signal) bool {
+		converted := [16]Signal{}
+		for i := range a {
+			converted[i] = a[i].Signal()
+		}
+		return converted == b
+	}
+	address := func(n int) [15]Pin {
+		n = n >> 14
+		return [15]Pin{
+			NewPin(Signal(n >> 0 & 1)),
+			NewPin(Signal(n >> 1 & 1)),
+		}
+	}
+	rom := ROM32K{}
+	for i := 0; i < 32768; i += 16384 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("reading address %v", addr), func(t *testing.T) {
+			// Reach in and set the ROM on the provided address, we cannot use the load bit for this like we have in the
+			// RAM testing since the ROM does not allow writes
+			nxt := [14]Pin{}
+			copy(nxt[:], addr[1:])
+			Mux2Way16(
+				addr[0].Signal(),
+				rom.chips[0].Out(NewPin(Active), nxt, NewPin16(split16(uint16(i)))),
+				rom.chips[1].Out(NewPin(Active), nxt, NewPin16(split16(uint16(i)))),
+			)
+			n := rom.Out(addr)
+			n = rom.Out(addr)
+			if !equals(NewPin16(split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
 			}
 		})
 	}
