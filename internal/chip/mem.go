@@ -181,3 +181,14 @@ func (c *ProgramCounter) Out(clk Pin, inc Pin, rst Pin, in [16]Pin) [16]Signal {
 	out = And16(out, expand16(Not(And(Not(clk.Signal()), rst.Signal()))))
 	return c.register.Out(NewPin(Active), NewPin16(out))
 }
+
+// ROM32K provides a read-only addressable memory (15-bit address space) of 32K size.
+type ROM32K struct {
+	Chips [2]RAM16K
+}
+
+func (r *ROM32K) Out(addr [15]Pin) [16]Signal {
+	nxt := [14]Pin{}
+	copy(nxt[:], addr[1:])
+	return Mux2Way16(addr[0].Signal(), r.Chips[0].Out(NewPin(Inactive), nxt, [16]Pin{}), r.Chips[1].Out(NewPin(Inactive), nxt, [16]Pin{}))
+}

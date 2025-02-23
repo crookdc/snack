@@ -338,6 +338,43 @@ func TestRAM16K_Out(t *testing.T) {
 	}
 }
 
+func TestROM32K_Out(t *testing.T) {
+	equals := func(a [16]Pin, b [16]Signal) bool {
+		converted := [16]Signal{}
+		for i := range a {
+			converted[i] = a[i].Signal()
+		}
+		return converted == b
+	}
+	address := func(n int) [15]Pin {
+		n = n >> 14
+		return [15]Pin{
+			NewPin(Signal(n >> 0 & 1)),
+			NewPin(Signal(n >> 1 & 1)),
+		}
+	}
+	rom := ROM32K{}
+	for i := 0; i < 32768; i += 16384 {
+		addr := address(i)
+		t.Run(fmt.Sprintf("reading address %v", addr), func(t *testing.T) {
+			// Reach in and set the ROM on the provided address, we cannot use the load bit for this like we have in the
+			// RAM testing since the ROM does not allow writes
+			nxt := [14]Pin{}
+			copy(nxt[:], addr[1:])
+			Mux2Way16(
+				addr[0].Signal(),
+				rom.Chips[0].Out(NewPin(Active), nxt, NewPin16(split16(uint16(i)))),
+				rom.Chips[1].Out(NewPin(Active), nxt, NewPin16(split16(uint16(i)))),
+			)
+			n := rom.Out(addr)
+			n = rom.Out(addr)
+			if !equals(NewPin16(split16(uint16(i))), n) {
+				t.Errorf("expected %v but got %v", i, n)
+			}
+		})
+	}
+}
+
 func TestCounter_Out(t *testing.T) {
 	t.Run("when load is set then sets value", func(t *testing.T) {
 		ctr := ProgramCounter{}
