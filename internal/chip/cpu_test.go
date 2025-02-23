@@ -512,10 +512,11 @@ func TestCPU_Out(t *testing.T) {
 			if a.pc != pc {
 				t.Errorf("expected program counter to contain %v but found %v", a.pc, pc)
 			}
-			pcreg := cpu.pc.Out(NewPin(0), NewPin(0), NewPin(0), [16]Pin{})
-			pcreg15 := [15]Signal{pcreg[1], pcreg[2], pcreg[3], pcreg[4], pcreg[5], pcreg[6], pcreg[7], pcreg[8], pcreg[9], pcreg[10], pcreg[11], pcreg[12], pcreg[13], pcreg[14], pcreg[15]}
-			if a.pc != pcreg15 {
-				t.Errorf("expected pcreg to contain %v but got %v", a.pc, pcreg15)
+			pcreg16 := cpu.pc.Out(NewPin(0), NewPin(0), NewPin(0), [16]Pin{})
+			pcreg := [15]Signal{}
+			copy(pcreg[:], pcreg16[1:])
+			if a.pc != pcreg {
+				t.Errorf("expected pcreg to contain %v but got %v", a.pc, pcreg)
 			}
 			if a.omem != omem {
 				t.Errorf("expected omem to contain %v but found %v", a.omem, omem)
