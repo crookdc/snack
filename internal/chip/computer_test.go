@@ -676,3 +676,13 @@ func TestROM32K_Out(t *testing.T) {
 		})
 	}
 }
+
+func TestComputer_Tick(t *testing.T) {
+	program := [][16]Pin{}
+	c := Computer{}
+	c.rom.write(program)
+	// During normal (non-test) execution the computer will just continue looping forever
+	for range len(program) {
+		c.Tick(NewPin(Inactive))
+	}
+}

@@ -6,6 +6,19 @@ type Computer struct {
 	mem Memory
 }
 
+func (c *Computer) Tick(rst Pin) {
+	addr := c.cpu.pc.Out(NewPin(Inactive), NewPin(Inactive), rst, [16]Pin{})
+	iaddr := [15]Signal{}
+	copy(iaddr[:], addr[1:])
+	instr := c.rom.Out(NewPin15(iaddr))
+	aout := c.cpu.a.Out(NewPin(Inactive), [16]Pin{})
+	maddr := [15]Signal{}
+	copy(maddr[:], aout[1:])
+	imem := c.mem.Out(NewPin(Inactive), NewPin15(maddr), [16]Pin{})
+	omem, wmem, maddr, _ := c.cpu.Out(NewPin16(instr), NewPin16(imem), rst)
+	c.mem.Out(NewPin(wmem), NewPin15(maddr), NewPin16(omem))
+}
+
 // CPU represents the central processing unit of the Computer. It is responsible for executing instructions coming from
 // the ROM, which in turn has side effects on the RAM and internal state of the CPU.
 type CPU struct {
@@ -81,6 +94,20 @@ func (r *ROM32K) Out(addr [15]Pin) [16]Signal {
 	nxt := [14]Pin{}
 	copy(nxt[:], addr[1:])
 	return Mux2Way16(addr[0].Signal(), r.chips[0].Out(NewPin(Inactive), nxt, [16]Pin{}), r.chips[1].Out(NewPin(Inactive), nxt, [16]Pin{}))
+}
+
+func (r *ROM32K) write(program [][16]Pin) {
+	for i, instr := range program {
+		addr := NewPin16(split16(uint16(i)))
+		al, bl := DMux2Way1(addr[0].Signal(), Active)
+		nxt := [14]Pin{}
+		copy(nxt[:], addr[1:])
+		Mux2Way16(
+			addr[0].Signal(),
+			r.chips[0].Out(NewPin(al), nxt, instr),
+			r.chips[1].Out(NewPin(bl), nxt, instr),
+		)
+	}
 }
 
 // Screen provides volatile storage of 4096 words (16-bit values) that can be addressed with 12 pins.
