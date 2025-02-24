@@ -678,11 +678,39 @@ func TestROM32K_Out(t *testing.T) {
 }
 
 func TestComputer_Tick(t *testing.T) {
-	program := [][16]Signal{}
-	c := Computer{}
-	c.rom.write(program)
-	// During normal (non-test) execution the computer will just continue looping forever
-	for range len(program) {
-		c.Tick(Inactive)
+	var assertions = []struct {
+		name    string
+		program [][16]Signal
+		mem     map[uint16][16]Signal
+	}{
+		{
+			name: "add two integers and store in RAM",
+			program: [][16]Signal{
+				split16(20),                    // @20
+				split16(0b1110_1100_0001_0000), // D = A
+				split16(60),                    // @60
+				split16(0b1110_0000_1001_0000), // D = A + D
+				split16(5),                     // @5
+				split16(0b1110_0011_0000_1000), // M = D
+			},
+			mem: map[uint16][16]Signal{
+				5: split16(80),
+			},
+		},
+	}
+	for _, a := range assertions {
+		t.Run(a.name, func(t *testing.T) {
+			c := Computer{}
+			c.rom.write(a.program)
+			// During normal (non-test) execution the computer will just continue looping forever
+			for range len(a.program) {
+				c.Tick(Inactive)
+			}
+			for address, value := range a.mem {
+				if out := c.mem.Out(Inactive, split15(address), split16(0)); out != value {
+					t.Errorf("expected RAM[%v] to contain %v but got %v", address, value, out)
+				}
+			}
+		})
 	}
 }

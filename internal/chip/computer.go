@@ -30,7 +30,8 @@ type CPU struct {
 
 func (c *CPU) Out(instr [16]Signal, imem [16]Signal, rst Signal) (omem [16]Signal, wmem Signal, addr [15]Signal, pc [15]Signal) {
 	a := Mux2Way16(instr[0], instr, c.a.Out(Inactive, [16]Signal{}))
-	a = c.a.Out(instr[0], a)
+	a = c.a.Out(Not(instr[0]), a)
+	instr = And16(expand16(instr[0]), instr)
 
 	c.alu.ZX = instr[4]
 	c.alu.NX = instr[5]
@@ -101,7 +102,7 @@ func (r *ROM32K) write(program [][16]Signal) {
 		addr := split16(uint16(i))
 		al, bl := DMux2Way1(addr[0], Active)
 		nxt := [14]Signal{}
-		copy(nxt[:], addr[1:])
+		copy(nxt[:], addr[2:])
 		Mux2Way16(
 			addr[0],
 			r.chips[0].Out(al, nxt, instr),
