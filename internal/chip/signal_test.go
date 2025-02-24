@@ -5,22 +5,6 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
-	t.Run("given unset value", func(t *testing.T) {
-		bit := NewPin(0)
-		if bit.Active() {
-			t.Error("got set signal")
-		}
-	})
-
-	t.Run("given set value", func(t *testing.T) {
-		bit := NewPin(1)
-		if !bit.Active() {
-			t.Error("got unset signal")
-		}
-	})
-}
-
 func TestBitSplit16(t *testing.T) {
 	var assertions = []struct {
 		n uint16

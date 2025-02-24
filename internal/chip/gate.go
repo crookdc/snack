@@ -224,13 +224,13 @@ func DMux8Way1(s [3]Signal, in Signal) (a, b, c, d, e, f, g, h Signal) {
 
 // DFF represents a data flip-flop capable of holding a single bit of information across CPU cycles.
 type DFF struct {
-	In  Pin
-	out Pin
+	In  Signal
+	out Signal
 }
 
 func (d *DFF) Out(load Signal) Signal {
 	if load == Active {
 		d.out = d.In
 	}
-	return d.out.Signal()
+	return d.out
 }

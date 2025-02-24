@@ -1,13 +1,13 @@
 package chip
 
-// Bit represents a digital snack.Pin that has been stored in a 1-bit register.
+// Bit represents a digital snack.Signal that has been stored in a 1-bit register.
 type Bit struct {
 	dff DFF
 }
 
-func (b *Bit) Out(load Pin, in Pin) Signal {
-	b.dff.In.Set(Mux2Way1(load.Signal(), b.dff.Out(load.Signal()), in.Signal()))
-	return b.dff.Out(load.Signal())
+func (b *Bit) Out(load Signal, in Signal) Signal {
+	b.dff.In = Mux2Way1(load, b.dff.Out(load), in)
+	return b.dff.Out(load)
 }
 
 // Register represents a simple array of 16 Bit coupled together to store a single 16 bit value.
@@ -16,7 +16,7 @@ type Register struct {
 }
 
 // Out reads the currently stored 16 bit value
-func (r *Register) Out(load Pin, in [16]Pin) [16]Signal {
+func (r *Register) Out(load Signal, in [16]Signal) [16]Signal {
 	return [16]Signal{
 		r.bits[0].Out(load, in[0]),
 		r.bits[1].Out(load, in[1]),
@@ -45,21 +45,21 @@ type RAM8 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM8) Out(load Pin, addr [3]Pin, in [16]Pin) [16]Signal {
+func (r *RAM8) Out(load Signal, addr [3]Signal, in [16]Signal) [16]Signal {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		load.Signal(),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		load,
 	)
 	return Mux8Way16(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		r.registers[0].Out(NewPin(al), in),
-		r.registers[1].Out(NewPin(bl), in),
-		r.registers[2].Out(NewPin(cl), in),
-		r.registers[3].Out(NewPin(dl), in),
-		r.registers[4].Out(NewPin(el), in),
-		r.registers[5].Out(NewPin(fl), in),
-		r.registers[6].Out(NewPin(gl), in),
-		r.registers[7].Out(NewPin(hl), in),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		r.registers[0].Out(al, in),
+		r.registers[1].Out(bl, in),
+		r.registers[2].Out(cl, in),
+		r.registers[3].Out(dl, in),
+		r.registers[4].Out(el, in),
+		r.registers[5].Out(fl, in),
+		r.registers[6].Out(gl, in),
+		r.registers[7].Out(hl, in),
 	)
 }
 
@@ -71,22 +71,22 @@ type RAM64 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM64) Out(load Pin, addr [6]Pin, in [16]Pin) [16]Signal {
+func (r *RAM64) Out(load Signal, addr [6]Signal, in [16]Signal) [16]Signal {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		load.Signal(),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		load,
 	)
-	nxt := [3]Pin{addr[3], addr[4], addr[5]}
+	nxt := [3]Signal{addr[3], addr[4], addr[5]}
 	return Mux8Way16(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		r.chips[0].Out(NewPin(al), nxt, in),
-		r.chips[1].Out(NewPin(bl), nxt, in),
-		r.chips[2].Out(NewPin(cl), nxt, in),
-		r.chips[3].Out(NewPin(dl), nxt, in),
-		r.chips[4].Out(NewPin(el), nxt, in),
-		r.chips[5].Out(NewPin(fl), nxt, in),
-		r.chips[6].Out(NewPin(gl), nxt, in),
-		r.chips[7].Out(NewPin(hl), nxt, in),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		r.chips[0].Out(al, nxt, in),
+		r.chips[1].Out(bl, nxt, in),
+		r.chips[2].Out(cl, nxt, in),
+		r.chips[3].Out(dl, nxt, in),
+		r.chips[4].Out(el, nxt, in),
+		r.chips[5].Out(fl, nxt, in),
+		r.chips[6].Out(gl, nxt, in),
+		r.chips[7].Out(hl, nxt, in),
 	)
 }
 
@@ -98,22 +98,22 @@ type RAM512 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM512) Out(load Pin, addr [9]Pin, in [16]Pin) [16]Signal {
+func (r *RAM512) Out(load Signal, addr [9]Signal, in [16]Signal) [16]Signal {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		load.Signal(),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		load,
 	)
-	nxt := [6]Pin{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8]}
+	nxt := [6]Signal{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8]}
 	return Mux8Way16(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		r.chips[0].Out(NewPin(al), nxt, in),
-		r.chips[1].Out(NewPin(bl), nxt, in),
-		r.chips[2].Out(NewPin(cl), nxt, in),
-		r.chips[3].Out(NewPin(dl), nxt, in),
-		r.chips[4].Out(NewPin(el), nxt, in),
-		r.chips[5].Out(NewPin(fl), nxt, in),
-		r.chips[6].Out(NewPin(gl), nxt, in),
-		r.chips[7].Out(NewPin(hl), nxt, in),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		r.chips[0].Out(al, nxt, in),
+		r.chips[1].Out(bl, nxt, in),
+		r.chips[2].Out(cl, nxt, in),
+		r.chips[3].Out(dl, nxt, in),
+		r.chips[4].Out(el, nxt, in),
+		r.chips[5].Out(fl, nxt, in),
+		r.chips[6].Out(gl, nxt, in),
+		r.chips[7].Out(hl, nxt, in),
 	)
 }
 
@@ -125,22 +125,22 @@ type RAM4K struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM4K) Out(load Pin, addr [12]Pin, in [16]Pin) [16]Signal {
+func (r *RAM4K) Out(load Signal, addr [12]Signal, in [16]Signal) [16]Signal {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		load.Signal(),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		load,
 	)
-	nxt := [9]Pin{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11]}
+	nxt := [9]Signal{addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11]}
 	return Mux8Way16(
-		[3]Signal{addr[0].Signal(), addr[1].Signal(), addr[2].Signal()},
-		r.chips[0].Out(NewPin(al), nxt, in),
-		r.chips[1].Out(NewPin(bl), nxt, in),
-		r.chips[2].Out(NewPin(cl), nxt, in),
-		r.chips[3].Out(NewPin(dl), nxt, in),
-		r.chips[4].Out(NewPin(el), nxt, in),
-		r.chips[5].Out(NewPin(fl), nxt, in),
-		r.chips[6].Out(NewPin(gl), nxt, in),
-		r.chips[7].Out(NewPin(hl), nxt, in),
+		[3]Signal{addr[0], addr[1], addr[2]},
+		r.chips[0].Out(al, nxt, in),
+		r.chips[1].Out(bl, nxt, in),
+		r.chips[2].Out(cl, nxt, in),
+		r.chips[3].Out(dl, nxt, in),
+		r.chips[4].Out(el, nxt, in),
+		r.chips[5].Out(fl, nxt, in),
+		r.chips[6].Out(gl, nxt, in),
+		r.chips[7].Out(hl, nxt, in),
 	)
 }
 
@@ -152,18 +152,18 @@ type RAM16K struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM16K) Out(load Pin, addr [14]Pin, in [16]Pin) [16]Signal {
+func (r *RAM16K) Out(load Signal, addr [14]Signal, in [16]Signal) [16]Signal {
 	al, bl, cl, dl := DMux4Way1(
-		[2]Signal{addr[0].Signal(), addr[1].Signal()},
-		load.Signal(),
+		[2]Signal{addr[0], addr[1]},
+		load,
 	)
-	nxt := [12]Pin{addr[2], addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11], addr[12], addr[13]}
+	nxt := [12]Signal{addr[2], addr[3], addr[4], addr[5], addr[6], addr[7], addr[8], addr[9], addr[10], addr[11], addr[12], addr[13]}
 	return Mux4Way16(
-		[2]Signal{addr[0].Signal(), addr[1].Signal()},
-		r.chips[0].Out(NewPin(al), nxt, in),
-		r.chips[1].Out(NewPin(bl), nxt, in),
-		r.chips[2].Out(NewPin(cl), nxt, in),
-		r.chips[3].Out(NewPin(dl), nxt, in),
+		[2]Signal{addr[0], addr[1]},
+		r.chips[0].Out(al, nxt, in),
+		r.chips[1].Out(bl, nxt, in),
+		r.chips[2].Out(cl, nxt, in),
+		r.chips[3].Out(dl, nxt, in),
 	)
 }
 
@@ -175,9 +175,9 @@ type ProgramCounter struct {
 // Out allows setting of the counters current value by providing a value in the 16-pin parameter `in` and setting the
 // load to an active pin. To increment the stored value the inc pin must only be set. Finally, to reset the value the rst
 // pin must be active.
-func (c *ProgramCounter) Out(load Pin, inc Pin, rst Pin, in [16]Pin) [16]Signal {
-	out := c.register.Out(load, NewPin16(And16(read16(in), Not16(expand16(inc.Signal())))))
-	out = Adder16(out, [16]Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, And(Not(load.Signal()), inc.Signal())})
-	out = And16(out, expand16(Not(And(Not(load.Signal()), rst.Signal()))))
-	return c.register.Out(NewPin(Active), NewPin16(out))
+func (c *ProgramCounter) Out(load Signal, inc Signal, rst Signal, in [16]Signal) [16]Signal {
+	out := c.register.Out(load, And16(in, Not16(expand16(inc))))
+	out = Adder16(out, [16]Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, And(Not(load), inc)})
+	out = And16(out, expand16(Not(And(Not(load), rst))))
+	return c.register.Out(Active, out)
 }

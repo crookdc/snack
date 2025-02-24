@@ -873,14 +873,14 @@ func TestDemux8Way(t *testing.T) {
 
 func TestDFF(t *testing.T) {
 	dff := &DFF{}
-	dff.In.Activate()
+	dff.In = Active
 	if bit := dff.Out(Inactive); bit == Active {
 		t.Errorf("expected dff to be unset before tick")
 	}
 	if bit := dff.Out(Active); bit == Inactive {
 		t.Errorf("expected dff to be set after tick")
 	}
-	dff.In.Deactivate()
+	dff.In = Inactive
 	if bit := dff.Out(Inactive); bit == Inactive {
 		t.Errorf("expected dff to be set before tick")
 	}
