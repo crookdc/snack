@@ -19,12 +19,12 @@ func TestNotAnd(t *testing.T) {
 		{
 			a: Inactive,
 			b: Active,
-			r: Inactive,
+			r: Active,
 		},
 		{
 			a: Active,
 			b: Inactive,
-			r: Inactive,
+			r: Active,
 		},
 		{
 			a: Active,
@@ -57,12 +57,12 @@ func TestNotAndUint16(t *testing.T) {
 		{
 			a: 0xF0F0,
 			b: 0x0F0F,
-			r: 0x0000,
+			r: 0xFFFF,
 		},
 		{
 			a: 0x0F00,
 			b: 0xF000,
-			r: 0x00FF,
+			r: 0xFFFF,
 		},
 		{
 			a: 0xFFFF,
@@ -72,17 +72,17 @@ func TestNotAndUint16(t *testing.T) {
 		{
 			a: 0xFFFF,
 			b: 0x0000,
-			r: 0x0000,
+			r: 0xFFFF,
 		},
 		{
 			a: 0x0000,
 			b: 0xFFFF,
-			r: 0x0000,
+			r: 0xFFFF,
 		},
 		{
 			a: 0b1001_0001_0011_1111,
 			b: 0b0000_0000_0000_0000,
-			r: 0b0110_1110_1100_0000,
+			r: 0b1111_1111_1111_1111,
 		},
 	}
 	for _, a := range assertions {

@@ -1,10 +1,10 @@
 package chip
 
 func NotAnd(a, b Signal) Signal {
-	if a == b && a == Inactive {
-		return Active
+	if a == Active && b == Active {
+		return Inactive
 	}
-	return Inactive
+	return Active
 }
 
 func NotAnd16(a, b [16]Signal) [16]Signal {
@@ -29,7 +29,7 @@ func NotAnd16(a, b [16]Signal) [16]Signal {
 }
 
 func Not(a Signal) Signal {
-	return NotAnd(a, Inactive)
+	return NotAnd(a, Active)
 }
 
 func Not16(a [16]Signal) [16]Signal {
@@ -54,7 +54,7 @@ func Not16(a [16]Signal) [16]Signal {
 }
 
 func And(a, b Signal) Signal {
-	return NotAnd(Not(a), Not(b))
+	return Not(NotAnd(a, b))
 }
 
 func And16(a, b [16]Signal) [16]Signal {
@@ -79,7 +79,7 @@ func And16(a, b [16]Signal) [16]Signal {
 }
 
 func Or(a, b Signal) Signal {
-	return Not(NotAnd(a, b))
+	return NotAnd(Not(a), Not(b))
 }
 
 func Or16(a, b [16]Signal) [16]Signal {
