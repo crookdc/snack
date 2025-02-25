@@ -697,14 +697,48 @@ func TestComputer_Tick(t *testing.T) {
 				5: split16(80),
 			},
 		},
+		{
+			name: "multiply an integer with itself",
+			program: [][16]Signal{
+				split16(0b0000000000000001), // @1
+				split16(0b1110101010001000), // M=0
+				split16(0b0000000000000100), // @4
+				split16(0b1110110000010000), // D=A
+				split16(0b0000000000000000), // @0
+				split16(0b1110001100001000), // M=D
+				split16(0b0000000000000001), // @1
+				split16(0b1111110000010000), // D=M
+				split16(0b0000000000000100), // @4
+				split16(0b1110000010010000), // D=D+A
+				split16(0b0000000000000001), // @1
+				split16(0b1110001100001000), // M=D
+				split16(0b0000000000000000), // @0
+				split16(0b1111110000010000), // D=M
+				split16(0b1110001110010000), // D=D-1
+				split16(0b1110001100001000), // M=D
+				split16(0b0000000000000100), // @4
+				split16(0b1110001100000001), // D;JGT
+			},
+			mem: map[uint16][16]Signal{
+				1: split16(16),
+			},
+		},
+	}
+	join := func(sigs [16]Signal) uint16 {
+		res := uint16(0)
+		for i, sig := range sigs {
+			res = res | (uint16(sig) << (15 - uint16(i)))
+		}
+		return res
 	}
 	for _, a := range assertions {
 		t.Run(a.name, func(t *testing.T) {
 			c := Computer{}
 			c.rom.write(a.program)
-			// During normal (non-test) execution the computer will just continue looping forever
-			for range len(a.program) {
+			pc := c.cpu.pc.Out(Inactive, Inactive, Inactive, [16]Signal{})
+			for join(pc) < uint16(len(a.program)) {
 				c.Tick(Inactive)
+				pc = c.cpu.pc.Out(Inactive, Inactive, Inactive, [16]Signal{})
 			}
 			for address, value := range a.mem {
 				if out := c.mem.Out(Inactive, split15(address), split16(0)); out != value {
