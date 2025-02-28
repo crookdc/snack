@@ -1,6 +1,9 @@
 package asm
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	symbols = map[uint8]variant{
@@ -11,6 +14,8 @@ var (
 		'&':  and,
 		'|':  or,
 		';':  semicolon,
+		'(':  leftParenthesis,
+		')':  rightParenthesis,
 	}
 	keywords = map[string]variant{
 		"JGT": jgt,
@@ -32,8 +37,9 @@ const (
 	or
 	identifier
 	integer
+	leftParenthesis
+	rightParenthesis
 	semicolon
-	comment
 	jgt
 	jeq
 	jge
@@ -96,6 +102,15 @@ func (l *lexer) next() (token, error) {
 	}, nil
 }
 
+func (l *lexer) seek(c uint8) error {
+	for ; l.cursor < len(l.src) && l.src[l.cursor] != c; l.cursor++ {
+	}
+	if l.cursor == len(l.src) {
+		return fmt.Errorf("character '%s' not found", string(c))
+	}
+	return nil
+}
+
 func (l *lexer) literal(fn func(uint8) bool) string {
 	literal := ""
 	for ; l.cursor < len(l.src) && fn(l.src[l.cursor]); l.cursor++ {
@@ -109,12 +124,11 @@ func (l *lexer) comment() (token, error) {
 		return token{}, errors.New("invalid token '/'")
 	}
 	l.cursor += 2
-	return token{
-		variant: comment,
-		literal: l.literal(func(c uint8) bool {
-			return c != '\n'
-		}),
-	}, nil
+	if err := l.seek('\n'); err != nil {
+		return token{}, err
+	}
+	l.cursor += 1
+	return l.next()
 }
 
 func alphanumerical(c uint8) bool {

@@ -28,15 +28,15 @@ func TestLexer_next(t *testing.T) {
 			},
 		},
 		{
-			src: "//this is a comment\n",
+			src: "//this is a comment\n@2000",
 			tokens: []token{
 				{
-					variant: comment,
-					literal: "this is a comment",
+					variant: at,
+					literal: "@",
 				},
 				{
-					variant: linefeed,
-					literal: "\n",
+					variant: integer,
+					literal: "2000",
 				},
 			},
 		},
