@@ -13,17 +13,18 @@ type Computer struct {
 	mem Memory
 }
 
-func (c *Computer) Tick(rst Signal) {
+func (c *Computer) Tick(rst Signal) (wmem Signal, maddr [15]Signal, omem [16]Signal) {
 	addr := c.cpu.pc.Out(Inactive, Inactive, rst, [16]Signal{})
 	iaddr := [15]Signal{}
 	copy(iaddr[:], addr[1:])
 	instr := c.rom.Out(iaddr)
 	aout := c.cpu.a.Out(Inactive, [16]Signal{})
-	maddr := [15]Signal{}
+	maddr = [15]Signal{}
 	copy(maddr[:], aout[1:])
 	imem := c.mem.Out(Inactive, maddr, [16]Signal{})
-	omem, wmem, maddr, _ := c.cpu.Out(instr, imem, rst)
+	omem, wmem, maddr, _ = c.cpu.Out(instr, imem, rst)
 	c.mem.Out(wmem, maddr, omem)
+	return
 }
 
 // CPU represents the central processing unit of the Computer. It is responsible for executing instructions coming from

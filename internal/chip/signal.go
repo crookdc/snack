@@ -34,3 +34,11 @@ func expand16(n Signal) [16]Signal {
 		n, n, n, n, n, n, n, n,
 	}
 }
+
+func Join15(sigs [15]Signal) uint16 {
+	n := uint16(0)
+	for i, sig := range sigs {
+		n = n | (uint16(sig) << (14 - i))
+	}
+	return n
+}
