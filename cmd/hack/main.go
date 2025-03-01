@@ -2,55 +2,76 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/crookdc/nand2tetris/internal/chip"
 	"github.com/veandco/go-sdl2/sdl"
+	"log"
 	"os"
-	"runtime"
+	"runtime/pprof"
 	"strconv"
 )
 
 const (
-	ScreenMemoryMapBegin = 16_384
+	ScreenMemoryMapBegin  = 16_384
+	ScreenMemoryMapLength = 8192
+)
+
+var (
+	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	program    = flag.String("program", "", "file containing program to be written to rom")
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		panic("missing path to program")
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal(err)
+		}
+		defer pprof.StopCPUProfile()
 	}
-	runtime.LockOSThread()
-	program, err := loadProgram(os.Args[1])
-	if err != nil {
-		panic(err)
+
+	if *program == "" {
+		log.Fatal("missing path to program")
 	}
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer sdl.Quit()
 
 	screen, err := NewSDLScreen()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer screen.Close()
 	if err := screen.Clear(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	screen.renderer.Present()
 
-	computer := chip.NewComputer(program)
-	for {
+	prog, err := loadProgram(*program)
+	if err != nil {
+		log.Fatal(err)
+	}
+	computer := chip.NewComputer(prog)
+	running := true
+	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
-				os.Exit(0)
+				running = false
 			}
 		}
 		wmem, maddr, omem := computer.Tick(chip.Inactive)
 		mem := chip.Join15(maddr)
-		if wmem == chip.Active && mem >= ScreenMemoryMapBegin {
+		if wmem == chip.Active && mem >= ScreenMemoryMapBegin && mem < ScreenMemoryMapBegin+ScreenMemoryMapLength {
 			if err := screen.Draw(mem-ScreenMemoryMapBegin, omem); err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 		}
 	}
@@ -135,7 +156,7 @@ func loadProgram(file string) ([][16]chip.Signal, error) {
 }
 
 func parseInstruction(line string) ([16]chip.Signal, error) {
-	var instruction [16]chip.Signal
+	instruction := [16]chip.Signal{}
 	for i := range 16 {
 		bit, err := strconv.Atoi(string(line[i]))
 		if err != nil {
