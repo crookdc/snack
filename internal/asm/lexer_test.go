@@ -82,6 +82,75 @@ func TestLexer_next(t *testing.T) {
 				},
 			},
 		},
+		{
+			src: "@10\nD=A+1\nM=D\nD;JNE",
+			tokens: []token{
+				{
+					variant: at,
+					literal: "@",
+				},
+				{
+					variant: integer,
+					literal: "10",
+				},
+				{
+					variant: linefeed,
+					literal: "\n",
+				},
+				{
+					variant: identifier,
+					literal: "D",
+				},
+				{
+					variant: equals,
+					literal: "=",
+				},
+				{
+					variant: identifier,
+					literal: "A",
+				},
+				{
+					variant: plus,
+					literal: "+",
+				},
+				{
+					variant: integer,
+					literal: "1",
+				},
+				{
+					variant: linefeed,
+					literal: "\n",
+				},
+				{
+					variant: identifier,
+					literal: "M",
+				},
+				{
+					variant: equals,
+					literal: "=",
+				},
+				{
+					variant: identifier,
+					literal: "D",
+				},
+				{
+					variant: linefeed,
+					literal: "\n",
+				},
+				{
+					variant: identifier,
+					literal: "D",
+				},
+				{
+					variant: semicolon,
+					literal: ";",
+				},
+				{
+					variant: jne,
+					literal: "JNE",
+				},
+			},
+		},
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given src %v", a.src), func(t *testing.T) {

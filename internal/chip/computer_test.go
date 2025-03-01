@@ -686,11 +686,11 @@ func TestComputer_Tick(t *testing.T) {
 		{
 			name: "add two integers and store in RAM",
 			program: [][16]Signal{
-				split16(20),                    // @20
+				split16(0b0000_0000_0001_0100), // @20
 				split16(0b1110_1100_0001_0000), // D = A
-				split16(60),                    // @60
+				split16(0b0000_0000_0011_1100), // @60
 				split16(0b1110_0000_1001_0000), // D = A + D
-				split16(5),                     // @5
+				split16(0b0000_0000_0000_0101), // @5
 				split16(0b1110_0011_0000_1000), // M = D
 			},
 			mem: map[uint16][16]Signal{

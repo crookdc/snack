@@ -1,5 +1,12 @@
 package chip
 
+// NewComputer creates a new Computer chip with the provided program preloaded into its ROM.
+func NewComputer(program [][16]Signal) Computer {
+	c := Computer{}
+	c.rom.write(program)
+	return c
+}
+
 type Computer struct {
 	rom ROM32K
 	cpu CPU
