@@ -1,7 +1,7 @@
 package chip
 
 func NotAnd(a, b Signal) Signal {
-	if a == Active && b == Active {
+	if a == b && a == Active {
 		return Inactive
 	}
 	return Active

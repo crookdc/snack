@@ -340,7 +340,7 @@ func TestRAM16K_Out(t *testing.T) {
 
 func TestCounter_Out(t *testing.T) {
 	t.Run("when load is set then sets value", func(t *testing.T) {
-		ctr := ProgramCounter{}
+		ctr := PC{}
 		load, inc, rst := Inactive, Inactive, Inactive
 		load = Active
 		out := ctr.Out(load, inc, rst, split16(55467))
@@ -365,7 +365,7 @@ func TestCounter_Out(t *testing.T) {
 		load = Active
 	})
 	t.Run("when inc is set then increments value", func(t *testing.T) {
-		ctr := ProgramCounter{}
+		ctr := PC{}
 		load, inc, rst := Inactive, Inactive, Inactive
 		out := ctr.Out(load, inc, rst, split16(0))
 		if out != split16(0) {
@@ -382,7 +382,7 @@ func TestCounter_Out(t *testing.T) {
 		}
 	})
 	t.Run("when rst is set then resets value", func(t *testing.T) {
-		ctr := ProgramCounter{}
+		ctr := PC{}
 		load, inc, rst := Inactive, Inactive, Inactive
 		out := ctr.Out(load, inc, rst, split16(0))
 		if out != split16(0) {

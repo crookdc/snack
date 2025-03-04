@@ -7,6 +7,11 @@ const (
 	Active
 )
 
+var (
+	NullWord    = [16]Signal{}
+	NullAddress = [15]Signal{}
+)
+
 // split16 transforms a 16-bit integer to its bit representation in the Signal abstraction.
 func split16(n uint16) [16]Signal {
 	res := [16]Signal{}

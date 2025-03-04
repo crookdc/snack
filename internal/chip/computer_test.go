@@ -640,43 +640,6 @@ func TestMemory_Out(t *testing.T) {
 	})
 }
 
-func TestROM32K_Out(t *testing.T) {
-	equals := func(a [16]Signal, b [16]Signal) bool {
-		converted := [16]Signal{}
-		for i := range a {
-			converted[i] = a[i]
-		}
-		return converted == b
-	}
-	address := func(n int) [15]Signal {
-		n = n >> 14
-		return [15]Signal{
-			Signal(n >> 0 & 1),
-			Signal(n >> 1 & 1),
-		}
-	}
-	rom := ROM32K{}
-	for i := 0; i < 32768; i += 16384 {
-		addr := address(i)
-		t.Run(fmt.Sprintf("reading address %v", addr), func(t *testing.T) {
-			// Reach in and set the ROM on the provided address, we cannot use the load bit for this like we have in the
-			// RAM testing since the ROM does not allow writes
-			nxt := [14]Signal{}
-			copy(nxt[:], addr[1:])
-			Mux2Way16(
-				addr[0],
-				rom.chips[0].Out(Active, nxt, split16(uint16(i))),
-				rom.chips[1].Out(Active, nxt, split16(uint16(i))),
-			)
-			n := rom.Out(addr)
-			n = rom.Out(addr)
-			if !equals(split16(uint16(i)), n) {
-				t.Errorf("expected %v but got %v", i, n)
-			}
-		})
-	}
-}
-
 func TestComputer_Tick(t *testing.T) {
 	var assertions = []struct {
 		name    string

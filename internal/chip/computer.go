@@ -1,28 +1,34 @@
 package chip
 
 // NewComputer creates a new Computer chip with the provided program preloaded into its ROM.
-func NewComputer(program [][16]Signal) Computer {
-	c := Computer{}
-	c.rom.write(program)
+func NewComputer(rom Memory, ram Memory) Computer {
+	c := Computer{
+		rom: rom,
+		mem: ram,
+	}
 	return c
 }
 
+type Memory interface {
+	Out(load Signal, addr [15]Signal, in [16]Signal) [16]Signal
+}
+
 type Computer struct {
-	rom ROM32K
+	rom Memory
 	cpu CPU
 	mem Memory
 }
 
-func (c *Computer) Tick(rst Signal) (wmem Signal, maddr [15]Signal, omem [16]Signal) {
-	addr := c.cpu.pc.Out(Inactive, Inactive, rst, [16]Signal{})
+func (c *Computer) Tick(rst Signal) {
+	addr := c.cpu.pc.Out(Inactive, Inactive, rst, NullWord) // TODO: Just make this return the 15-bit address
 	iaddr := [15]Signal{}
 	copy(iaddr[:], addr[1:])
-	instr := c.rom.Out(iaddr)
-	aout := c.cpu.a.Out(Inactive, [16]Signal{})
-	maddr = [15]Signal{}
+	instr := c.rom.Out(Inactive, iaddr, NullWord)
+	aout := c.cpu.a.Out(Inactive, NullWord)
+	maddr := [15]Signal{}
 	copy(maddr[:], aout[1:])
-	imem := c.mem.Out(Inactive, maddr, [16]Signal{})
-	omem, wmem, maddr, _ = c.cpu.Out(instr, imem, rst)
+	imem := c.mem.Out(Inactive, maddr, NullWord)
+	omem, wmem, maddr, _ := c.cpu.Out(instr, imem, rst)
 	c.mem.Out(wmem, maddr, omem)
 	return
 }
@@ -33,11 +39,11 @@ type CPU struct {
 	a   Register
 	d   Register
 	alu ALU
-	pc  ProgramCounter
+	pc  PC
 }
 
 func (c *CPU) Out(instr [16]Signal, imem [16]Signal, rst Signal) (omem [16]Signal, wmem Signal, addr [15]Signal, pc [15]Signal) {
-	a := Mux2Way16(instr[0], instr, c.a.Out(Inactive, [16]Signal{}))
+	a := Mux2Way16(instr[0], instr, c.a.Out(Inactive, NullWord))
 	a = c.a.Out(Not(instr[0]), a)
 	instr = And16(expand16(instr[0]), instr)
 
@@ -47,8 +53,8 @@ func (c *CPU) Out(instr [16]Signal, imem [16]Signal, rst Signal) (omem [16]Signa
 	c.alu.NY = instr[7]
 	c.alu.F = instr[8]
 	c.alu.NO = instr[9]
-	opa := Mux2Way16(instr[3], a, imem)  // Choose between the A register and incoming memory data for the first operand
-	opb := c.d.Out(Inactive, split16(0)) // Just read the D register to act as the second operand
+	opa := Mux2Way16(instr[3], a, imem)
+	opb := c.d.Out(Inactive, split16(0))
 	omem, zr, ng := c.alu.Out(opb, opa)
 
 	c.a.Out(instr[10], omem)
@@ -69,13 +75,13 @@ func (c *CPU) Out(instr [16]Signal, imem [16]Signal, rst Signal) (omem [16]Signa
 	return
 }
 
-type Memory struct {
+type memory struct {
 	ram      RAM16K
 	screen   Screen
 	keyboard Register
 }
 
-func (m *Memory) Out(load Signal, addr [15]Signal, in [16]Signal) [16]Signal {
+func (m *memory) Out(load Signal, addr [15]Signal, in [16]Signal) [16]Signal {
 	rla, rlb, sl, kl := DMux4Way1(
 		[2]Signal{addr[0], addr[1]},
 		load,
@@ -92,31 +98,6 @@ func (m *Memory) Out(load Signal, addr [15]Signal, in [16]Signal) [16]Signal {
 		m.screen.Out(sl, addr13, in),
 		m.keyboard.Out(kl, in),
 	)
-}
-
-// ROM32K provides a read-only addressable memory (15-bit address space) of 32K size.
-type ROM32K struct {
-	chips [2]RAM16K
-}
-
-func (r *ROM32K) Out(addr [15]Signal) [16]Signal {
-	nxt := [14]Signal{}
-	copy(nxt[:], addr[1:])
-	return Mux2Way16(addr[0], r.chips[0].Out(Inactive, nxt, [16]Signal{}), r.chips[1].Out(Inactive, nxt, [16]Signal{}))
-}
-
-func (r *ROM32K) write(program [][16]Signal) {
-	for i, instr := range program {
-		addr := split16(uint16(i))
-		al, bl := DMux2Way1(addr[0], Active)
-		nxt := [14]Signal{}
-		copy(nxt[:], addr[2:])
-		Mux2Way16(
-			addr[0],
-			r.chips[0].Out(al, nxt, instr),
-			r.chips[1].Out(bl, nxt, instr),
-		)
-	}
 }
 
 // Screen provides volatile storage of 4096 words (16-bit values) that can be addressed with 12 pins.
