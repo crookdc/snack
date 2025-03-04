@@ -15,6 +15,7 @@ import (
 const (
 	ScreenMemoryMapBegin  = 16_384
 	ScreenMemoryMapLength = 8192
+	ScreenRefreshRateHz   = 33
 )
 
 var (
@@ -73,7 +74,7 @@ func main() {
 			}
 		}
 		computer.Tick(chip.Inactive)
-		if sdl.GetTicks64()-renderTick > 1000/500 {
+		if sdl.GetTicks64()-renderTick > 1000/ScreenRefreshRateHz {
 			if err := screen.Draw(&ram.mem); err != nil {
 				log.Fatal(err)
 			}
@@ -153,7 +154,12 @@ func (s *SDLScreen) Draw(mem *[32768][16]chip.Signal) error {
 	}
 	points := make([]sdl.Point, 0, ScreenMemoryMapLength)
 	for i := range ScreenMemoryMapLength {
-		points = append(points, s.draw(i, &mem[ScreenMemoryMapBegin+i])...)
+		points = append(points, s.points(i, &mem[ScreenMemoryMapBegin+i])...)
+	}
+	if len(points) == 0 {
+		// If there are no points to render then the renderer will return an error in DrawPoints. Even if that was not
+		// the case then it would just be wasteful to call the renderer if there is nothing to render.
+		return nil
 	}
 	if err := s.renderer.DrawPoints(points); err != nil {
 		return err
@@ -162,7 +168,7 @@ func (s *SDLScreen) Draw(mem *[32768][16]chip.Signal) error {
 	return nil
 }
 
-func (s *SDLScreen) draw(position int, val *[16]chip.Signal) []sdl.Point {
+func (s *SDLScreen) points(position int, val *[16]chip.Signal) []sdl.Point {
 	points := make([]sdl.Point, 0, 16)
 	row := position / 32
 	for i, px := range val {
