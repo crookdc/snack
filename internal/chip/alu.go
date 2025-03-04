@@ -18,16 +18,16 @@ type ALU struct {
 }
 
 // Out is performing operations on the provided inputs as outlined by the state of the ALU
-func (a *ALU) Out(x, y [16]Signal) (out [16]Signal, zr Signal, ng Signal) {
-	x = And16(x, expand16(Not(a.ZX)))
-	x = Xor16(x, expand16(a.NX))
+func (a *ALU) Out(x, y ReadonlyWord) (out *Word, zr Signal, ng Signal) {
+	x = And16To1(Not(a.ZX), x)
+	x = Xor16To1(a.NX, x)
 
-	y = And16(y, expand16(Not(a.ZY)))
-	y = Xor16(y, expand16(a.NY))
+	y = And16To1(Not(a.ZY), y)
+	y = Xor16To1(a.NY, y)
 
 	out = Mux2Way16(a.F, And16(x, y), Adder16(x, y))
-	out = Xor16(out, expand16(a.NO))
-	ng = out[0] // If the MSB is 1 then the value is negative as per the rules of two's complement
-	zr = Not(Or(out[0], Or(out[1], Or(out[2], Or(out[3], Or(out[4], Or(out[5], Or(out[6], Or(out[7], Or(out[8], Or(out[9], Or(out[10], Or(out[11], Or(out[12], Or(out[13], Or(out[14], out[15]))))))))))))))))
+	out = Xor16To1(a.NO, out)
+	ng = out.Get(0) // If the MSB is 1 then the value is negative as per the rules of two's complement
+	zr = Not(Or(out.Get(0), Or(out.Get(1), Or(out.Get(2), Or(out.Get(3), Or(out.Get(4), Or(out.Get(5), Or(out.Get(6), Or(out.Get(7), Or(out.Get(8), Or(out.Get(9), Or(out.Get(10), Or(out.Get(11), Or(out.Get(12), Or(out.Get(13), Or(out.Get(14), out.Get(15)))))))))))))))))
 	return
 }

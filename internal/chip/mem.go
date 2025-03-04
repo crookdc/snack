@@ -16,25 +16,12 @@ type Register struct {
 }
 
 // Out reads the currently stored 16 bit value
-func (r *Register) Out(load Signal, in [16]Signal) [16]Signal {
-	return [16]Signal{
-		r.bits[0].Out(load, in[0]),
-		r.bits[1].Out(load, in[1]),
-		r.bits[2].Out(load, in[2]),
-		r.bits[3].Out(load, in[3]),
-		r.bits[4].Out(load, in[4]),
-		r.bits[5].Out(load, in[5]),
-		r.bits[6].Out(load, in[6]),
-		r.bits[7].Out(load, in[7]),
-		r.bits[8].Out(load, in[8]),
-		r.bits[9].Out(load, in[9]),
-		r.bits[10].Out(load, in[10]),
-		r.bits[11].Out(load, in[11]),
-		r.bits[12].Out(load, in[12]),
-		r.bits[13].Out(load, in[13]),
-		r.bits[14].Out(load, in[14]),
-		r.bits[15].Out(load, in[15]),
+func (r *Register) Out(load Signal, in ReadonlyWord) *Word {
+	w := NewWord()
+	for i := range 16 {
+		w.Set(i, r.bits[i].Out(load, in.Get(i)))
 	}
+	return w
 }
 
 // RAM8 provides volatile storage of 8 words (16-bit values) that can be addressed with 3 pins.
@@ -45,7 +32,7 @@ type RAM8 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM8) Out(load Signal, addr [3]Signal, in [16]Signal) [16]Signal {
+func (r *RAM8) Out(load Signal, addr [3]Signal, in ReadonlyWord) *Word {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
 		[3]Signal{addr[0], addr[1], addr[2]},
 		load,
@@ -71,7 +58,7 @@ type RAM64 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM64) Out(load Signal, addr [6]Signal, in [16]Signal) [16]Signal {
+func (r *RAM64) Out(load Signal, addr [6]Signal, in ReadonlyWord) *Word {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
 		[3]Signal{addr[0], addr[1], addr[2]},
 		load,
@@ -98,7 +85,7 @@ type RAM512 struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM512) Out(load Signal, addr [9]Signal, in [16]Signal) [16]Signal {
+func (r *RAM512) Out(load Signal, addr [9]Signal, in ReadonlyWord) *Word {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
 		[3]Signal{addr[0], addr[1], addr[2]},
 		load,
@@ -125,7 +112,7 @@ type RAM4K struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM4K) Out(load Signal, addr [12]Signal, in [16]Signal) [16]Signal {
+func (r *RAM4K) Out(load Signal, addr [12]Signal, in ReadonlyWord) *Word {
 	al, bl, cl, dl, el, fl, gl, hl := DMux8Way1(
 		[3]Signal{addr[0], addr[1], addr[2]},
 		load,
@@ -152,7 +139,7 @@ type RAM16K struct {
 // Out either sets and returns or just returns the value for the provided address. When the load pin is active the in
 // value is set on the provided address and then returned. When the load pin is inactive the value on the given
 // address is just returned.
-func (r *RAM16K) Out(load Signal, addr [14]Signal, in [16]Signal) [16]Signal {
+func (r *RAM16K) Out(load Signal, addr [14]Signal, in ReadonlyWord) *Word {
 	al, bl, cl, dl := DMux4Way1(
 		[2]Signal{addr[0], addr[1]},
 		load,
@@ -175,9 +162,9 @@ type PC struct {
 // Out allows setting of the counters current value by providing a value in the 16-pin parameter `in` and setting the
 // load to an active pin. To increment the stored value the inc pin must only be set. Finally, to reset the value the rst
 // pin must be active.
-func (c *PC) Out(load Signal, inc Signal, rst Signal, in [16]Signal) [16]Signal {
-	out := c.register.Out(load, And16(in, Not16(expand16(inc))))
-	out = Adder16(out, [16]Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, And(Not(load), inc)})
-	out = And16(out, expand16(Not(And(Not(load), rst))))
+func (c *PC) Out(load Signal, inc Signal, rst Signal, in ReadonlyWord) *Word {
+	out := c.register.Out(load, And16To1(Not(inc), in))
+	out = Adder16(out, Wrap(&[16]Signal{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, And(Not(load), inc)}))
+	out = And16To1(Not(And(Not(load), rst)), out)
 	return c.register.Out(Active, out)
 }

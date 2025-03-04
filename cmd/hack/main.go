@@ -99,19 +99,19 @@ type RAM struct {
 	window SDLScreen
 }
 
-func (b *RAM) Out(load chip.Signal, addr [15]chip.Signal, in [16]chip.Signal) [16]chip.Signal {
+func (b *RAM) Out(load chip.Signal, addr [15]chip.Signal, in chip.ReadonlyWord) *chip.Word {
 	idx := chip.Join15(addr)
 	if load == chip.Inactive {
-		return b.mem[idx]
+		return chip.Wrap(&b.mem[idx])
 	}
-	b.mem[idx] = in
-	return b.mem[idx]
+	b.mem[idx] = in.Copy()
+	return chip.Wrap(&b.mem[idx])
 }
 
 type ROM [][16]chip.Signal
 
-func (r ROM) Out(_ chip.Signal, addr [15]chip.Signal, _ [16]chip.Signal) [16]chip.Signal {
-	return r[chip.Join15(addr)]
+func (r ROM) Out(_ chip.Signal, addr [15]chip.Signal, _ chip.ReadonlyWord) *chip.Word {
+	return chip.Wrap(&r[chip.Join15(addr)])
 }
 
 func NewSDLScreen() (SDLScreen, error) {

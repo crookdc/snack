@@ -15,12 +15,12 @@ func FullAdder(a, b, c Signal) (carry Signal, sum Signal) {
 }
 
 // Adder16 adds two 16-bit integers and returns the result. The carry bit is ignored by the adder.
-func Adder16(a, b [16]Signal) [16]Signal {
-	r := [16]Signal{}
+func Adder16(a, b ReadonlyWord) *Word {
+	r := NewWord()
 	c, s := Inactive, Inactive
 	for i := range 16 {
-		c, s = FullAdder(a[15-i], b[15-i], c)
-		r[15-i] = s
+		c, s = FullAdder(a.Get(15-i), b.Get(15-i), c)
+		r.Set(15-i, s)
 	}
 	return r
 }
