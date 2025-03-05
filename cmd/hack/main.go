@@ -15,17 +15,18 @@ import (
 const (
 	ScreenMemoryMapBegin  = 16_384
 	ScreenMemoryMapLength = 8192
+	ScreenRefreshRateHz   = 33
 )
 
 var (
-	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-	program    = flag.String("program", "", "file containing program to be written to rom")
+	profile = flag.String("profile", "", "write profiling data to files with this base name")
+	program = flag.String("program", "", "file containing program to be written to rom")
 )
 
 func main() {
 	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	if *profile != "" {
+		f, err := os.Create(*profile + ".cpu")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,7 +40,7 @@ func main() {
 	if *program == "" {
 		log.Fatal("missing path to program")
 	}
-	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS); err != nil {
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		log.Fatal(err)
 	}
 	defer sdl.Quit()
@@ -58,8 +59,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	computer := chip.NewComputer(prog)
+	ram := &chip.RAM{}
+	computer := chip.NewComputer(
+		prog,
+		ram,
+	)
 	running := true
+	renderTick := sdl.GetTicks64()
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
@@ -67,18 +73,29 @@ func main() {
 				running = false
 			}
 		}
-		wmem, maddr, omem := computer.Tick(chip.Inactive)
-		mem := chip.Join15(maddr)
-		if wmem == chip.Active && mem >= ScreenMemoryMapBegin && mem < ScreenMemoryMapBegin+ScreenMemoryMapLength {
-			if err := screen.Draw(mem-ScreenMemoryMapBegin, omem); err != nil {
+		computer.Tick(chip.Inactive)
+		if sdl.GetTicks64()-renderTick > 1000/ScreenRefreshRateHz {
+			if err := screen.Draw(ram); err != nil {
 				log.Fatal(err)
 			}
+			renderTick = sdl.GetTicks64()
+		}
+	}
+
+	if *profile != "" {
+		f, err := os.Create(*profile + ".heap")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal(err)
 		}
 	}
 }
 
 func NewSDLScreen() (SDLScreen, error) {
-	window, err := sdl.CreateWindow("Hack", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 256, 512, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("Hack", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 512, 256, sdl.WINDOW_SHOWN)
 	if err != nil {
 		return SDLScreen{}, err
 	}
@@ -93,8 +110,9 @@ func NewSDLScreen() (SDLScreen, error) {
 }
 
 type SDLScreen struct {
-	window   *sdl.Window
-	renderer *sdl.Renderer
+	window    *sdl.Window
+	renderer  *sdl.Renderer
+	presented uint64
 }
 
 func (s *SDLScreen) Clear() error {
@@ -107,39 +125,58 @@ func (s *SDLScreen) Clear() error {
 	return nil
 }
 
-func (s *SDLScreen) Draw(position uint16, val [16]chip.Signal) error {
-	row := position / 16
-	for i, px := range val {
-		var err error
-		if px == chip.Active {
-			err = s.renderer.SetDrawColor(255, 255, 255, 255)
-		} else {
-			err = s.renderer.SetDrawColor(0, 0, 0, 255)
-		}
-		if err != nil {
-			return err
-		}
-		col := ((int(position) * 16) % 256) + i
-		err = s.renderer.DrawPoint(int32(col), int32(row))
-		if err != nil {
-			return err
-		}
+func (s *SDLScreen) Draw(mem chip.Memory) error {
+	if err := s.Clear(); err != nil {
+		return err
+	}
+	if err := s.renderer.SetDrawColor(255, 255, 255, 255); err != nil {
+		return err
+	}
+	points := make([]sdl.Point, 0, ScreenMemoryMapLength)
+	for i := range ScreenMemoryMapLength {
+		val := mem.Out(chip.Inactive, chip.WrapUint16(uint16(ScreenMemoryMapBegin+i)).Address(), chip.NullWord)
+		points = append(points, s.points(i, val)...)
+	}
+	if len(points) == 0 {
+		// If there are no points to render then the renderer will return an error in DrawPoints. Even if that was not
+		// the case then it would just be wasteful to call the renderer if there is nothing to render.
+		return nil
+	}
+	if err := s.renderer.DrawPoints(points); err != nil {
+		return err
 	}
 	s.renderer.Present()
 	return nil
+}
+
+func (s *SDLScreen) points(position int, val chip.ReadonlyWord) []sdl.Point {
+	points := make([]sdl.Point, 0, 16)
+	row := position / 32
+	for i := range 16 {
+		px := val.Get(i)
+		col := ((position * 16) % 512) + i
+		if px == chip.Inactive {
+			continue
+		}
+		points = append(points, sdl.Point{
+			X: int32(col),
+			Y: int32(row),
+		})
+	}
+	return points
 }
 
 func (s *SDLScreen) Close() {
 	_ = s.window.Destroy()
 }
 
-func loadProgram(file string) ([][16]chip.Signal, error) {
+func loadProgram(file string) (chip.ROM, error) {
 	f, err := os.OpenFile(file, os.O_RDONLY, 0666)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer f.Close()
-	var program [][16]chip.Signal
+	var rom chip.ROM
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		line := s.Text()
@@ -150,9 +187,9 @@ func loadProgram(file string) ([][16]chip.Signal, error) {
 		if err != nil {
 			return nil, err
 		}
-		program = append(program, instruction)
+		rom = append(rom, instruction)
 	}
-	return program, nil
+	return rom, nil
 }
 
 func parseInstruction(line string) ([16]chip.Signal, error) {

@@ -168,8 +168,10 @@ func TestAdder16(t *testing.T) {
 		},
 	}
 	for _, a := range assertions {
-		r := Adder16(split16(a.a), split16(a.b))
-		if r != split16(a.r) {
+		opa := split16(a.a)
+		opb := split16(a.b)
+		r := Adder16(Wrap(&opa), Wrap(&opb))
+		if r.Copy() != split16(a.r) {
 			t.Errorf("expected %v but got %v", a.r, r)
 		}
 	}

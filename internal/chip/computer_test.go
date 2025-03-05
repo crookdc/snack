@@ -1,7 +1,6 @@
 package chip
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -498,28 +497,23 @@ func TestCPU_Out(t *testing.T) {
 	for _, a := range assertions {
 		t.Run(a.name, func(t *testing.T) {
 			cpu := CPU{}
-			cpu.a.Out(Active, a.ain)
-			cpu.d.Out(Active, a.din)
+			cpu.a.Out(Active, Wrap(&a.ain))
+			cpu.d.Out(Active, Wrap(&a.din))
 
-			omem, wmem, addr, pc := cpu.Out(a.instr, a.imem, a.rst)
-			areg := cpu.a.Out(0, [16]Signal{})
-			if a.aout != areg {
+			omem, wmem, addr := cpu.Out(Wrap(&a.instr), Wrap(&a.imem), a.rst)
+			areg := cpu.a.Out(0, NullWord)
+			if a.aout != areg.Copy() {
 				t.Errorf("expected aout register to contain %v but found %v", a.aout, areg)
 			}
-			dreg := cpu.d.Out(0, [16]Signal{})
-			if a.dout != dreg {
+			dreg := cpu.d.Out(0, NullWord)
+			if a.dout != dreg.Copy() {
 				t.Errorf("expected dout register to contain %v but found %v", a.dout, dreg)
 			}
-			if a.pc != pc {
-				t.Errorf("expected program counter to contain %v but found %v", a.pc, pc)
-			}
-			pcreg16 := cpu.pc.Out(0, 0, 0, [16]Signal{})
-			pcreg := [15]Signal{}
-			copy(pcreg[:], pcreg16[1:])
+			pcreg := cpu.pc.Out(0, 0, 0, NullWord).Address()
 			if a.pc != pcreg {
 				t.Errorf("expected pcreg to contain %v but got %v", a.pc, pcreg)
 			}
-			if a.omem != omem {
+			if a.omem != omem.Copy() {
 				t.Errorf("expected omem to contain %v but found %v", a.omem, omem)
 			}
 			if a.wmem != wmem {
@@ -527,151 +521,6 @@ func TestCPU_Out(t *testing.T) {
 			}
 			if a.addr != addr {
 				t.Errorf("expected addr to contain %v but found %v", a.addr, addr)
-			}
-		})
-	}
-}
-
-func TestMemory_Out(t *testing.T) {
-	ramAddress := func(n uint16) [14]Signal {
-		res := [14]Signal{}
-		for i := range 14 {
-			res[i] = Signal(uint8(n>>(13-i)) & 1)
-		}
-		p := [14]Signal{}
-		for i := range 14 {
-			p[i] = res[i]
-		}
-		return p
-	}
-	var ramw = []struct {
-		address uint16
-		value   uint16
-		r       uint16
-	}{
-		{
-			address: 0,
-			value:   0xF0FF,
-			r:       0xF0FF,
-		},
-		{
-			address: 12345,
-			value:   0x0FFF,
-			r:       0x0FFF,
-		},
-		{
-			address: 16383,
-			value:   0xFFFF,
-			r:       0xFFFF,
-		},
-		{
-			address: 16384, // The address for this test is outside the RAM range
-			value:   0xFFFF,
-			r:       0,
-		},
-	}
-	for _, w := range ramw {
-		t.Run(fmt.Sprintf("writing %v to %v address", w.value, w.address), func(t *testing.T) {
-			mem := Memory{}
-			mem.Out(Active, split15(w.address), split16(w.value))
-			n := mem.ram.Out(Inactive, ramAddress(w.address), [16]Signal{})
-			if n != split16(w.r) {
-				t.Errorf("expected RAM n to be %v but got %v", split16(w.r), n)
-			}
-		})
-	}
-
-	screenAddress := func(n uint16) [13]Signal {
-		res := [13]Signal{}
-		for i := range 13 {
-			res[i] = Signal(uint8(n>>(12-i)) & 1)
-		}
-		p := [13]Signal{}
-		for i := range 13 {
-			p[i] = res[i]
-		}
-		return p
-	}
-	var screenw = []struct {
-		addr  uint16
-		value uint16
-		r     uint16
-	}{
-		{
-			addr:  0b011_0100_0110_0011,
-			value: 0xF0FF,
-			r:     0,
-		},
-		{
-			addr:  0b100_0100_0110_0011,
-			value: 0x0FFF,
-			r:     0x0FFF,
-		},
-		{
-			addr:  0b101_1100_0110_0011,
-			value: 0xFFFF,
-			r:     0xFFFF,
-		},
-		{
-			addr:  0b111_1100_0110_0011,
-			value: 0xFFFF,
-			r:     0,
-		},
-	}
-	for _, w := range screenw {
-		t.Run(fmt.Sprintf("writing %v to %v address", w.value, w.addr), func(t *testing.T) {
-			mem := Memory{}
-			mem.Out(Active, split15(w.addr), split16(w.value))
-			n := mem.screen.Out(Inactive, screenAddress(w.addr), [16]Signal{})
-			if n != split16(w.r) {
-				t.Errorf("expected screen n to be %v but got %v", split16(w.r), n)
-			}
-		})
-	}
-
-	t.Run("reading and writing keyboard", func(t *testing.T) {
-		addr := uint16(24576)
-		mem := Memory{}
-		mem.Out(Active, split15(addr), split16(1012))
-		n := mem.keyboard.Out(Inactive, [16]Signal{})
-		if n != split16(1012) {
-			t.Errorf("expected keyboard to be %v but got %v", split16(1012), n)
-		}
-	})
-}
-
-func TestROM32K_Out(t *testing.T) {
-	equals := func(a [16]Signal, b [16]Signal) bool {
-		converted := [16]Signal{}
-		for i := range a {
-			converted[i] = a[i]
-		}
-		return converted == b
-	}
-	address := func(n int) [15]Signal {
-		n = n >> 14
-		return [15]Signal{
-			Signal(n >> 0 & 1),
-			Signal(n >> 1 & 1),
-		}
-	}
-	rom := ROM32K{}
-	for i := 0; i < 32768; i += 16384 {
-		addr := address(i)
-		t.Run(fmt.Sprintf("reading address %v", addr), func(t *testing.T) {
-			// Reach in and set the ROM on the provided address, we cannot use the load bit for this like we have in the
-			// RAM testing since the ROM does not allow writes
-			nxt := [14]Signal{}
-			copy(nxt[:], addr[1:])
-			Mux2Way16(
-				addr[0],
-				rom.chips[0].Out(Active, nxt, split16(uint16(i))),
-				rom.chips[1].Out(Active, nxt, split16(uint16(i))),
-			)
-			n := rom.Out(addr)
-			n = rom.Out(addr)
-			if !equals(split16(uint16(i)), n) {
-				t.Errorf("expected %v but got %v", i, n)
 			}
 		})
 	}
@@ -724,24 +573,19 @@ func TestComputer_Tick(t *testing.T) {
 			},
 		},
 	}
-	join := func(sigs [16]Signal) uint16 {
-		res := uint16(0)
-		for i, sig := range sigs {
-			res = res | (uint16(sig) << (15 - uint16(i)))
-		}
-		return res
-	}
 	for _, a := range assertions {
 		t.Run(a.name, func(t *testing.T) {
-			c := Computer{}
-			c.rom.write(a.program)
-			pc := c.cpu.pc.Out(Inactive, Inactive, Inactive, [16]Signal{})
-			for join(pc) < uint16(len(a.program)) {
+			c := Computer{
+				mem: &RAM{},
+			}
+			c.rom = ROM(a.program)
+			pc := c.cpu.pc.Out(Inactive, Inactive, Inactive, NullWord)
+			for pc.Uint16() < uint16(len(a.program)) {
 				c.Tick(Inactive)
-				pc = c.cpu.pc.Out(Inactive, Inactive, Inactive, [16]Signal{})
+				pc = c.cpu.pc.Out(Inactive, Inactive, Inactive, NullWord)
 			}
 			for address, value := range a.mem {
-				if out := c.mem.Out(Inactive, split15(address), split16(0)); out != value {
+				if out := c.mem.Out(Inactive, split15(address), NullWord); out.Copy() != value {
 					t.Errorf("expected RAM[%v] to contain %v but got %v", address, value, out)
 				}
 			}
