@@ -1,5 +1,4 @@
 .idea
-docs/
-hack
+bins/simulator
 *.cpu
 *.heap

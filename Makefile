@@ -1,3 +1,3 @@
-.PHONY: hack
-hack:
-	go build -o hack cmd/hack/main.go
+.PHONY: simulator
+simulator:
+	go build -o bins/simulator cmd/hack/main.go
