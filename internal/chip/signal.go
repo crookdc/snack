@@ -18,6 +18,11 @@ func Wrap(w *[16]Signal) *Word {
 	return &Word{word: w}
 }
 
+func WrapUint16(n uint16) *Word {
+	word := split16(n)
+	return &Word{word: &word}
+}
+
 func NewWord() *Word {
 	return &Word{word: &[16]Signal{}}
 }
@@ -48,6 +53,14 @@ func (w *Word) Address() [15]Signal {
 		address[i-1] = w.word[i]
 	}
 	return address
+}
+
+func (w *Word) Uint16() uint16 {
+	n := uint16(0)
+	for i, sig := range w.word {
+		n = n | (uint16(sig) << (15 - i))
+	}
+	return n
 }
 
 // split16 transforms a 16-bit integer to its bit representation in the Signal abstraction.

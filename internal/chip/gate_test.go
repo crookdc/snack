@@ -85,11 +85,13 @@ func TestNotAndUint16(t *testing.T) {
 			r: 0b1111_1111_1111_1111,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := NotAnd16(split16(a.a), split16(a.b))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v and b is %v", assert.a, assert.b), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			r := NotAnd16(Wrap(&a), Wrap(&b))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", r, assert.r)
 			}
 		})
 	}
@@ -142,11 +144,12 @@ func TestNotUint16(t *testing.T) {
 			r: 0x0000,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v", a.a), func(t *testing.T) {
-			r := Not16(split16(a.a))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v but got %v", a.r, a.a, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v", assert.a), func(t *testing.T) {
+			a := split16(assert.a)
+			r := Not16(Wrap(&a))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", assert.r, r)
 			}
 		})
 	}
@@ -217,11 +220,13 @@ func TestAndUint16(t *testing.T) {
 			r: 0xFFFF,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := And16(split16(a.a), split16(a.b))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v and b: %v but got %v", r, a.r, a.a, a.b)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v and b is %v", assert.a, assert.b), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			r := And16(Wrap(&a), Wrap(&b))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", r, assert.r)
 			}
 		})
 	}
@@ -292,11 +297,13 @@ func TestOrUint16(t *testing.T) {
 			r: 0xF00F,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := Or16(split16(a.a), split16(a.b))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v and b is %v", assert.a, assert.b), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			r := Or16(Wrap(&a), Wrap(&b))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", assert.r, r)
 			}
 		})
 	}
@@ -362,11 +369,13 @@ func TestXorUint16(t *testing.T) {
 			r: 0,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v and b is %v", a.a, a.b), func(t *testing.T) {
-			r := Xor16(split16(a.a), split16(a.b))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v and b: %v but got %v", a.r, a.a, a.b, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v and b is %v", assert.a, assert.b), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			r := Xor16(Wrap(&a), Wrap(&b))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", assert.r, r)
 			}
 		})
 	}
@@ -428,11 +437,13 @@ func TestMux2Way16(t *testing.T) {
 			r:   0,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given a is %v, b is %v and sel is %v", a.a, a.b, a.sel), func(t *testing.T) {
-			r := Mux2Way16(a.sel, split16(a.a), split16(a.b))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with a: %v, b: %v and sel: %v but got %v", a.r, a.a, a.b, a.sel, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given a is %v, b is %v and sel is %v", assert.a, assert.b, assert.sel), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			r := Mux2Way16(assert.sel, Wrap(&a), Wrap(&b))
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v but got %v", assert.r, r)
 			}
 		})
 	}
@@ -481,11 +492,22 @@ func TestMux4Way16(t *testing.T) {
 			r: 40,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("given s: %v", a.s), func(t *testing.T) {
-			r := Mux4Way16(a.s, split16(a.a), split16(a.b), split16(a.c), split16(a.d))
-			if r != split16(a.r) {
-				t.Errorf("expected %v given s: %v but got %v", a.r, a.s, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("given s: %v", assert.s), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			c := split16(assert.c)
+			d := split16(assert.d)
+
+			r := Mux4Way16(
+				assert.s,
+				Wrap(&a),
+				Wrap(&b),
+				Wrap(&c),
+				Wrap(&d),
+			)
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v given s: %v but got %v", assert.r, assert.s, r)
 			}
 		})
 	}
@@ -611,11 +633,29 @@ func TestMux8Way16(t *testing.T) {
 			r: 80,
 		},
 	}
-	for _, a := range assertions {
-		t.Run(fmt.Sprintf("with s: %v", a.s), func(t *testing.T) {
-			r := Mux8Way16(a.s, split16(a.a), split16(a.b), split16(a.c), split16(a.d), split16(a.e), split16(a.f), split16(a.g), split16(a.h))
-			if r != split16(a.r) {
-				t.Errorf("expected %v with s: %v got got %v", a.r, a.s, r)
+	for _, assert := range assertions {
+		t.Run(fmt.Sprintf("with s: %v", assert.s), func(t *testing.T) {
+			a := split16(assert.a)
+			b := split16(assert.b)
+			c := split16(assert.c)
+			d := split16(assert.d)
+			e := split16(assert.e)
+			f := split16(assert.f)
+			g := split16(assert.g)
+			h := split16(assert.h)
+			r := Mux8Way16(
+				assert.s,
+				Wrap(&a),
+				Wrap(&b),
+				Wrap(&c),
+				Wrap(&d),
+				Wrap(&e),
+				Wrap(&f),
+				Wrap(&g),
+				Wrap(&h),
+			)
+			if r.Copy() != split16(assert.r) {
+				t.Errorf("expected %v with s: %v got got %v", assert.r, assert.s, r)
 			}
 		})
 	}
@@ -656,11 +696,12 @@ func TestDemux2Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in is %v and s is %v", a.in, a.s), func(t *testing.T) {
-			ar, br := DMux2Way16(a.s, split16(a.in))
-			if ar != split16(a.a) {
+			in := split16(a.in)
+			ar, br := DMux2Way16(a.s, Wrap(&in))
+			if ar.Copy() != split16(a.a) {
 				t.Errorf("expected ar %v but got %v", a.a, ar)
 			}
-			if br != split16(a.b) {
+			if br.Copy() != split16(a.b) {
 				t.Errorf("expected br %v but got %v", a.b, br)
 			}
 		})
@@ -712,17 +753,18 @@ func TestDemux4Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr := DMux4Way16(a.s, split16(a.in))
-			if ar != split16(a.a) {
+			in := split16(a.in)
+			ar, br, cr, dr := DMux4Way16(a.s, Wrap(&in))
+			if ar.Copy() != split16(a.a) {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
-			if br != split16(a.b) {
+			if br.Copy() != split16(a.b) {
 				t.Errorf("expected b %v but got %v", a.b, br)
 			}
-			if cr != split16(a.c) {
+			if cr.Copy() != split16(a.c) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
-			if dr != split16(a.d) {
+			if dr.Copy() != split16(a.d) {
 				t.Errorf("expected dout %v but got %v", a.d, dr)
 			}
 		})
@@ -842,29 +884,30 @@ func TestDemux8Way(t *testing.T) {
 	}
 	for _, a := range assertions {
 		t.Run(fmt.Sprintf("given in %v and s %v", a.in, a.s), func(t *testing.T) {
-			ar, br, cr, dr, er, fr, gr, hr := DMux8Way16(a.s, split16(a.in))
-			if ar != split16(a.a) {
+			in := split16(a.in)
+			ar, br, cr, dr, er, fr, gr, hr := DMux8Way16(a.s, Wrap(&in))
+			if ar.Copy() != split16(a.a) {
 				t.Errorf("expected a %v but got %v", a.a, ar)
 			}
-			if br != split16(a.b) {
+			if br.Copy() != split16(a.b) {
 				t.Errorf("expected b %v but got %v", a.b, br)
 			}
-			if cr != split16(a.c) {
+			if cr.Copy() != split16(a.c) {
 				t.Errorf("expected c %v but got %v", a.c, cr)
 			}
-			if dr != split16(a.d) {
+			if dr.Copy() != split16(a.d) {
 				t.Errorf("expected dout %v but got %v", a.d, dr)
 			}
-			if er != split16(a.e) {
+			if er.Copy() != split16(a.e) {
 				t.Errorf("expected e %v but got %v", a.e, er)
 			}
-			if fr != split16(a.f) {
+			if fr.Copy() != split16(a.f) {
 				t.Errorf("expected f %v but got %v", a.f, fr)
 			}
-			if gr != split16(a.g) {
+			if gr.Copy() != split16(a.g) {
 				t.Errorf("expected g %v but got %v", a.g, gr)
 			}
-			if hr != split16(a.h) {
+			if hr.Copy() != split16(a.h) {
 				t.Errorf("expected h %v but got %v", a.h, hr)
 			}
 		})

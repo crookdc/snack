@@ -59,7 +59,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ram := &RAM{window: screen}
+	ram := &chip.RAM{}
 	computer := chip.NewComputer(
 		prog,
 		ram,
@@ -75,7 +75,7 @@ func main() {
 		}
 		computer.Tick(chip.Inactive)
 		if sdl.GetTicks64()-renderTick > 1000/ScreenRefreshRateHz {
-			if err := screen.Draw(&ram.mem); err != nil {
+			if err := screen.Draw(ram); err != nil {
 				log.Fatal(err)
 			}
 			renderTick = sdl.GetTicks64()
@@ -92,26 +92,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-}
-
-type RAM struct {
-	mem    [32768][16]chip.Signal
-	window SDLScreen
-}
-
-func (b *RAM) Out(load chip.Signal, addr [15]chip.Signal, in chip.ReadonlyWord) *chip.Word {
-	idx := chip.Join15(addr)
-	if load == chip.Inactive {
-		return chip.Wrap(&b.mem[idx])
-	}
-	b.mem[idx] = in.Copy()
-	return chip.Wrap(&b.mem[idx])
-}
-
-type ROM [][16]chip.Signal
-
-func (r ROM) Out(_ chip.Signal, addr [15]chip.Signal, _ chip.ReadonlyWord) *chip.Word {
-	return chip.Wrap(&r[chip.Join15(addr)])
 }
 
 func NewSDLScreen() (SDLScreen, error) {
@@ -145,7 +125,7 @@ func (s *SDLScreen) Clear() error {
 	return nil
 }
 
-func (s *SDLScreen) Draw(mem *[32768][16]chip.Signal) error {
+func (s *SDLScreen) Draw(mem chip.Memory) error {
 	if err := s.Clear(); err != nil {
 		return err
 	}
@@ -154,7 +134,8 @@ func (s *SDLScreen) Draw(mem *[32768][16]chip.Signal) error {
 	}
 	points := make([]sdl.Point, 0, ScreenMemoryMapLength)
 	for i := range ScreenMemoryMapLength {
-		points = append(points, s.points(i, &mem[ScreenMemoryMapBegin+i])...)
+		val := mem.Out(chip.Inactive, chip.WrapUint16(uint16(ScreenMemoryMapBegin+i)).Address(), chip.NullWord)
+		points = append(points, s.points(i, val)...)
 	}
 	if len(points) == 0 {
 		// If there are no points to render then the renderer will return an error in DrawPoints. Even if that was not
@@ -168,10 +149,11 @@ func (s *SDLScreen) Draw(mem *[32768][16]chip.Signal) error {
 	return nil
 }
 
-func (s *SDLScreen) points(position int, val *[16]chip.Signal) []sdl.Point {
+func (s *SDLScreen) points(position int, val chip.ReadonlyWord) []sdl.Point {
 	points := make([]sdl.Point, 0, 16)
 	row := position / 32
-	for i, px := range val {
+	for i := range 16 {
+		px := val.Get(i)
 		col := ((position * 16) % 512) + i
 		if px == chip.Inactive {
 			continue
@@ -188,13 +170,13 @@ func (s *SDLScreen) Close() {
 	_ = s.window.Destroy()
 }
 
-func loadProgram(file string) (ROM, error) {
+func loadProgram(file string) (chip.ROM, error) {
 	f, err := os.OpenFile(file, os.O_RDONLY, 0666)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	var rom ROM
+	var rom chip.ROM
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		line := s.Text()

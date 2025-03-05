@@ -13,6 +13,25 @@ type Memory interface {
 	Out(load Signal, addr [15]Signal, in ReadonlyWord) *Word
 }
 
+type ROM [][16]Signal
+
+func (r ROM) Out(_ Signal, addr [15]Signal, _ ReadonlyWord) *Word {
+	return Wrap(&r[Join15(addr)])
+}
+
+type RAM struct {
+	mem [32768][16]Signal
+}
+
+func (b *RAM) Out(load Signal, addr [15]Signal, in ReadonlyWord) *Word {
+	idx := Join15(addr)
+	if load == Inactive {
+		return Wrap(&b.mem[idx])
+	}
+	b.mem[idx] = in.Copy()
+	return Wrap(&b.mem[idx])
+}
+
 type Computer struct {
 	rom Memory
 	cpu CPU
