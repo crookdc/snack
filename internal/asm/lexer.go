@@ -64,6 +64,10 @@ type lexer struct {
 	cursor int
 }
 
+func (l *lexer) more() bool {
+	return l.cursor < len(l.src)
+}
+
 // next returns the next token that can be extracted from the underlying source code from the current cursor position
 // and places cursor at the next character after all characters belonging to the most recently processed token. Calling
 // next after the cursor has reached the end of the underlying source code is safe and will only result in an eof token
