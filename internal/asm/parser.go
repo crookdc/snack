@@ -16,13 +16,13 @@ func (l load) Literal() string {
 	return fmt.Sprintf("@%s", l.value.literal)
 }
 
-type computation struct {
+type compute struct {
 	dest *token
 	comp string
 	jump *token
 }
 
-func (c computation) Literal() string {
+func (c compute) Literal() string {
 	var str string
 	if c.dest != nil {
 		str += fmt.Sprintf("%s=", c.dest.literal)
@@ -32,6 +32,14 @@ func (c computation) Literal() string {
 		str += fmt.Sprintf(";%s", c.jump.literal)
 	}
 	return str
+}
+
+type label struct {
+	value token
+}
+
+func (l label) Literal() string {
+	return fmt.Sprintf("(%s)", l.value.literal)
 }
 
 type parser struct {
@@ -44,10 +52,14 @@ func (p *parser) next() (instruction, error) {
 		return nil, err
 	}
 	switch tok.variant {
+	case eof:
+		return nil, nil
 	case at:
 		return p.a()
+	case lparen:
+		return p.label()
 	default:
-		panic("not implemented")
+		return p.c()
 	}
 }
 
@@ -62,17 +74,37 @@ func (p *parser) a() (load, error) {
 	if tok.variant != integer && tok.variant != identifier {
 		return load{}, fmt.Errorf("unexpected token for A-instruction '%v'", tok)
 	}
+	if err := p.seek(linefeed); err != nil {
+		return load{}, err
+	}
 	return load{value: tok}, nil
 }
 
-func (p *parser) c() (comp computation, err error) {
+func (p *parser) label() (label, error) {
+	if _, err := p.want(lparen); err != nil {
+		return label{}, err
+	}
+	name, err := p.want(identifier)
+	if err != nil {
+		return label{}, err
+	}
+	if _, err := p.want(rparen); err != nil {
+		return label{}, err
+	}
+	if err := p.seek(linefeed); err != nil {
+		return label{}, err
+	}
+	return label{value: name}, nil
+}
+
+func (p *parser) c() (comp compute, err error) {
 	tok, err := p.lexer.next()
 	if err != nil {
-		return computation{}, err
+		return compute{}, err
 	}
 	next, err := p.lexer.peek()
 	if err != nil {
-		return computation{}, err
+		return compute{}, err
 	}
 	if next.variant == equals {
 		_, _ = p.want(equals)
@@ -80,30 +112,30 @@ func (p *parser) c() (comp computation, err error) {
 			variant: tok.variant,
 			literal: tok.literal,
 		}
-		// Fetch the next token for parsing the computation field
+		// Fetch the next token for parsing the compute field
 		tok, err = p.lexer.next()
 		if err != nil {
-			return computation{}, err
+			return compute{}, err
 		}
 	}
 	for tok.variant != semicolon && tok.variant != linefeed {
 		comp.comp += tok.literal
 		tok, err = p.lexer.next()
 		if err != nil {
-			return computation{}, err
+			return compute{}, err
 		}
 	}
 	if tok.variant == semicolon {
 		jmp, err := p.lexer.next()
 		if err != nil {
-			return computation{}, err
+			return compute{}, err
 		}
 		comp.jump = &token{
 			variant: jmp.variant,
 			literal: jmp.literal,
 		}
 		if err := p.seek(linefeed); err != nil {
-			return computation{}, err
+			return compute{}, err
 		}
 	}
 	return comp, nil
