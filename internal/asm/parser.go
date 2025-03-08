@@ -46,6 +46,10 @@ type parser struct {
 	lexer lexer
 }
 
+func (p *parser) more() bool {
+	return p.lexer.more()
+}
+
 func (p *parser) next() (instruction, error) {
 	tok, err := p.lexer.peek()
 	if err != nil {

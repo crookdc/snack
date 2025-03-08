@@ -1,24 +1,70 @@
 package asm
 
 import (
-	"errors"
+	"fmt"
 	"github.com/crookdc/nand2tetris/internal/chip"
+	"strconv"
 )
 
 func Assemble(src string) ([][16]chip.Signal, error) {
-	lex := lexer{src: src}
-	var bin [][16]chip.Signal
-	for lex.more() {
-		tok, err := lex.next()
+	mem, err := buildMemoryMap(src)
+	if err != nil {
+		return nil, err
+	}
+	var program [][16]chip.Signal
+	ps := parser{
+		lexer: lexer{
+			src: src,
+		},
+	}
+	for ps.more() {
+		ins, err := ps.next()
 		if err != nil {
 			return nil, err
 		}
-		switch tok.variant {
-		case eof:
-			return bin, nil
+		switch v := ins.(type) {
+		case load:
+			var val int
+			if v.value.variant == integer {
+				val, err = strconv.Atoi(v.value.literal)
+			} else if v.value.variant == identifier {
+				val = mem[v.value.literal]
+			} else {
+				return nil, fmt.Errorf("unexpected load token %+v", v.value)
+			}
+			program = append(program, chip.WrapUint16(uint16(val)).Copy())
+		default:
 		}
 	}
-	// The token stream **should** end with an EOF token, that case is handled in the above loop. If we exit the loop
-	// due to exhaustion of the lexers input without entering there then something is wrong.
-	return nil, errors.New("unexpected end of file")
+	return program, nil
+}
+
+func buildMemoryMap(src string) (map[string]int, error) {
+	mem := make(map[string]int)
+	ps := parser{
+		lexer: lexer{
+			src: src,
+		},
+	}
+	cur := 16
+	for ps.more() {
+		ins, err := ps.next()
+		if err != nil {
+			return nil, err
+		}
+		switch v := ins.(type) {
+		case label:
+			if _, ok := mem[v.value.literal]; !ok {
+				mem[v.value.literal] = cur + 1
+				cur++
+			}
+		case load:
+			if _, ok := mem[v.value.literal]; !ok {
+				mem[v.value.literal] = cur + 1
+				cur++
+			}
+		default:
+		}
+	}
+	return mem, nil
 }
