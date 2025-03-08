@@ -68,6 +68,14 @@ func (l *lexer) more() bool {
 	return l.cursor < len(l.src)
 }
 
+func (l *lexer) peek() (token, error) {
+	prev := l.cursor
+	defer func() {
+		l.cursor = prev
+	}()
+	return l.next()
+}
+
 // next returns the next token that can be extracted from the underlying source code from the current cursor position
 // and places cursor at the next character after all characters belonging to the most recently processed token. Calling
 // next after the cursor has reached the end of the underlying source code is safe and will only result in an eof token
@@ -95,7 +103,7 @@ func (l *lexer) next() (token, error) {
 		return token{}, fmt.Errorf("invalid token '%s'", string(char))
 	}
 	// Identifiers cannot start with a digit, therefore we must first check if the current character is an integer to
-	// decide whether to regard this as an integer literal
+	// decide whether to regard this as an integer Literal
 	if numerical(char) {
 		return token{
 			variant: integer,

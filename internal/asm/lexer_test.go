@@ -28,6 +28,35 @@ func TestLexer_next(t *testing.T) {
 			},
 		},
 		{
+			src: "ADM=A+1\n",
+			tokens: []token{
+				{
+					variant: identifier,
+					literal: "ADM",
+				},
+				{
+					variant: equals,
+					literal: "=",
+				},
+				{
+					variant: identifier,
+					literal: "A",
+				},
+				{
+					variant: plus,
+					literal: "+",
+				},
+				{
+					variant: integer,
+					literal: "1",
+				},
+				{
+					variant: linefeed,
+					literal: "\n",
+				},
+			},
+		},
+		{
 			src: "//this is a comment\n@2000",
 			tokens: []token{
 				{
