@@ -3,6 +3,7 @@ package asm
 import (
 	"errors"
 	"fmt"
+	"unicode"
 )
 
 var (
@@ -86,6 +87,10 @@ func (l *lexer) next() (token, error) {
 			variant: eof,
 		}, nil
 	}
+	// Seek to the closest non-whitespace character
+	l.literal(func(u uint8) bool {
+		return unicode.IsSpace(rune(u))
+	})
 	char := l.src[l.cursor]
 	if symbol, ok := symbols[char]; ok {
 		l.cursor++
@@ -97,11 +102,6 @@ func (l *lexer) next() (token, error) {
 	if char == '/' {
 		return l.comment()
 	}
-	if !alphanumerical(char) {
-		// At this point all the valid non-alphanumerical characters should have been processed. Therefore, if the
-		// current character is not alphanumerical it should be considered invalid.
-		return token{}, fmt.Errorf("invalid token '%s'", string(char))
-	}
 	// Identifiers cannot start with a digit, therefore we must first check if the current character is an integer to
 	// decide whether to regard this as an integer Literal
 	if numerical(char) {
@@ -110,7 +110,20 @@ func (l *lexer) next() (token, error) {
 			literal: l.literal(numerical),
 		}, nil
 	}
-	literal := l.literal(alphanumerical)
+	literal := l.literal(func(u uint8) bool {
+		if unicode.IsSpace(rune(u)) {
+			return false
+		}
+		if alphanumerical(u) {
+			return true
+		}
+		switch u {
+		case '_', '-':
+			return true
+		default:
+			return false
+		}
+	})
 	keyword, ok := keywords[literal]
 	if ok {
 		return token{

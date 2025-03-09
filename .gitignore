@@ -2,3 +2,5 @@
 bins/simulator
 *.cpu
 *.heap
+hack
+asm
