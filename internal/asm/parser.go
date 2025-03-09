@@ -51,6 +51,9 @@ func (p *parser) more() bool {
 }
 
 func (p *parser) next() (instruction, error) {
+	if err := p.seek(p.clear); err != nil {
+		return nil, err
+	}
 	tok, err := p.lexer.peek()
 	if err != nil {
 		return nil, err
@@ -78,7 +81,7 @@ func (p *parser) a() (load, error) {
 	if tok.variant != integer && tok.variant != identifier {
 		return load{}, fmt.Errorf("unexpected token for A-instruction '%v'", tok)
 	}
-	if err := p.seek(linefeed); err != nil {
+	if err := p.seek(p.clear); err != nil {
 		return load{}, err
 	}
 	return load{value: tok}, nil
@@ -95,7 +98,7 @@ func (p *parser) label() (label, error) {
 	if _, err := p.want(rparen); err != nil {
 		return label{}, err
 	}
-	if err := p.seek(linefeed); err != nil {
+	if err := p.seek(p.clear); err != nil {
 		return label{}, err
 	}
 	return label{value: name}, nil
@@ -138,28 +141,33 @@ func (p *parser) c() (comp compute, err error) {
 			variant: jmp.variant,
 			literal: jmp.literal,
 		}
-		if err := p.seek(linefeed); err != nil {
+		if err := p.seek(p.clear); err != nil {
 			return compute{}, err
 		}
 	}
 	return comp, nil
 }
 
-func (p *parser) seek(v variant) error {
-	tok, err := p.lexer.next()
+func (p *parser) seek(fn func(*token) bool) error {
+	tok, err := p.lexer.peek()
 	if err != nil {
 		return err
 	}
-	for tok.variant != v {
-		tok, err = p.lexer.next()
+	for fn(&tok) && tok.variant != eof {
+		_, err = p.lexer.next()
 		if err != nil {
 			return err
 		}
-		if tok.variant == eof && v != eof {
-			return fmt.Errorf("could not find token of variant '%v' before eof", v)
+		tok, err = p.lexer.peek()
+		if err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+func (p *parser) clear(tok *token) bool {
+	return tok.variant == linefeed
 }
 
 func (p *parser) want(v variant) (token, error) {

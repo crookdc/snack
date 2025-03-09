@@ -82,15 +82,12 @@ func (l *lexer) peek() (token, error) {
 // next after the cursor has reached the end of the underlying source code is safe and will only result in an eof token
 // being returned together with a nil error.
 func (l *lexer) next() (token, error) {
+	l.literal(l.space)
 	if l.cursor >= len(l.src) {
 		return token{
 			variant: eof,
 		}, nil
 	}
-	// Seek to the closest non-whitespace character
-	l.literal(func(u uint8) bool {
-		return unicode.IsSpace(rune(u))
-	})
 	char := l.src[l.cursor]
 	if symbol, ok := symbols[char]; ok {
 		l.cursor++
@@ -110,20 +107,7 @@ func (l *lexer) next() (token, error) {
 			literal: l.literal(numerical),
 		}, nil
 	}
-	literal := l.literal(func(u uint8) bool {
-		if unicode.IsSpace(rune(u)) {
-			return false
-		}
-		if alphanumerical(u) {
-			return true
-		}
-		switch u {
-		case '_', '-':
-			return true
-		default:
-			return false
-		}
-	})
+	literal := l.literal(l.identifier)
 	keyword, ok := keywords[literal]
 	if ok {
 		return token{
@@ -146,6 +130,10 @@ func (l *lexer) seek(c uint8) error {
 	return nil
 }
 
+func (l *lexer) space(c uint8) bool {
+	return c != '\n' && unicode.IsSpace(rune(c))
+}
+
 func (l *lexer) literal(fn func(uint8) bool) string {
 	literal := ""
 	for ; l.cursor < len(l.src) && fn(l.src[l.cursor]); l.cursor++ {
@@ -166,8 +154,27 @@ func (l *lexer) comment() (token, error) {
 	return l.next()
 }
 
+func (l *lexer) identifier(c uint8) bool {
+	if unicode.IsSpace(rune(c)) {
+		return false
+	}
+	if alphanumerical(c) {
+		return true
+	}
+	switch c {
+	case '_', '.', '$', ':':
+		return true
+	default:
+		return false
+	}
+}
+
 func alphanumerical(c uint8) bool {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+	return alphabetical(c) || numerical(c)
+}
+
+func alphabetical(c uint8) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 }
 
 func numerical(c uint8) bool {

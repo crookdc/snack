@@ -46,14 +46,10 @@ var (
 		"JLE": 0b110,
 		"JMP": 0b111,
 	}
-	destinations = map[string]int{
-		"M":   0b001,
-		"D":   0b010,
-		"DM":  0b011,
-		"A":   0b100,
-		"AM":  0b101,
-		"AD":  0b110,
-		"ADM": 0b111,
+	destinations = map[uint8]int{
+		'M': 0b001,
+		'D': 0b010,
+		'A': 0b100,
 	}
 )
 
@@ -92,9 +88,13 @@ func Assemble(src string) ([][16]chip.Signal, error) {
 			}
 			bin = bin << 6
 			if v.dest != nil {
-				dest, ok := destinations[v.dest.literal]
-				if !ok {
-					return nil, fmt.Errorf("invalid destination %+v", v.dest)
+				dest := 0
+				for i := range v.dest.literal {
+					d, ok := destinations[v.dest.literal[i]]
+					if !ok {
+						return nil, fmt.Errorf("invalid destination %+v", v.dest)
+					}
+					dest = dest | d
 				}
 				bin = bin | (dest << 3)
 			}
@@ -114,13 +114,36 @@ func Assemble(src string) ([][16]chip.Signal, error) {
 }
 
 func buildMemoryMap(src string) (map[string]int, error) {
-	mem := make(map[string]int)
+	mem := map[string]int{
+		"R0":     0,
+		"R1":     1,
+		"R2":     2,
+		"R3":     3,
+		"R4":     4,
+		"R5":     5,
+		"R6":     6,
+		"R7":     7,
+		"R8":     8,
+		"R9":     9,
+		"R10":    10,
+		"R11":    11,
+		"R12":    12,
+		"R13":    13,
+		"R14":    14,
+		"R15":    15,
+		"SP":     0,
+		"LCL":    1,
+		"ARG":    2,
+		"THIS":   3,
+		"THAT":   4,
+		"SCREEN": 16_384,
+		"KBD":    24_576,
+	}
 	ps := parser{
 		lexer: lexer{
 			src: src,
 		},
 	}
-	cur := 16
 	for line := 0; ps.more(); line++ {
 		ins, err := ps.next()
 		if err != nil {
@@ -130,13 +153,31 @@ func buildMemoryMap(src string) (map[string]int, error) {
 		case label:
 			if _, ok := mem[v.value.literal]; !ok {
 				mem[v.value.literal] = line
-				cur++
 			}
 			line--
+		default:
+		}
+	}
+	ps = parser{
+		lexer: lexer{
+			src: src,
+		},
+	}
+	cursor := 16
+	for ps.more() {
+		ins, err := ps.next()
+		if err != nil {
+			return nil, err
+		}
+		switch v := ins.(type) {
 		case load:
-			if _, ok := mem[v.value.literal]; !ok {
-				mem[v.value.literal] = cur + 1
-				cur++
+			if v.value.variant != identifier {
+				continue
+			}
+			_, ok := mem[v.value.literal]
+			if !ok {
+				mem[v.value.literal] = cursor
+				cursor++
 			}
 		default:
 		}
