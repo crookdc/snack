@@ -1,12 +1,11 @@
 package chip
 
 // NewComputer creates a new Computer chip with the provided program preloaded into its ROM.
-func NewComputer(rom Memory, ram Memory) Computer {
-	c := Computer{
+func NewComputer(rom Memory) Computer {
+	return Computer{
 		rom: rom,
-		mem: ram,
+		mem: &RAM{},
 	}
-	return c
 }
 
 type Memory interface {
@@ -36,6 +35,10 @@ type Computer struct {
 	rom Memory
 	cpu CPU
 	mem Memory
+}
+
+func (c *Computer) RAM() Memory {
+	return c.mem
 }
 
 func (c *Computer) Tick(rst Signal) {

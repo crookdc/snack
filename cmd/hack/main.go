@@ -5,17 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/crookdc/nand2tetris/internal/chip"
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/crookdc/nand2tetris/internal/simulator"
 	"log"
 	"os"
 	"runtime/pprof"
 	"strconv"
-)
-
-const (
-	ScreenMemoryMapBegin  = 16_384
-	ScreenMemoryMapLength = 8192
-	ScreenRefreshRateHz   = 33
 )
 
 var (
@@ -36,50 +30,21 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-
 	if *program == "" {
 		log.Fatal("missing path to program")
 	}
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		log.Fatal(err)
-	}
-	defer sdl.Quit()
 
-	screen, err := NewSDLScreen()
+	rom, err := loadProgram(*program)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer screen.Close()
-	if err := screen.Clear(); err != nil {
-		log.Fatal(err)
-	}
-	screen.renderer.Present()
-
-	prog, err := loadProgram(*program)
+	sim, err := simulator.NewSDLSimulator(rom)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ram := &chip.RAM{}
-	computer := chip.NewComputer(
-		prog,
-		ram,
-	)
-	running := true
-	renderTick := sdl.GetTicks64()
-	for running {
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent:
-				running = false
-			}
-		}
-		computer.Tick(chip.Inactive)
-		if sdl.GetTicks64()-renderTick > 1000/ScreenRefreshRateHz {
-			if err := screen.Draw(ram); err != nil {
-				log.Fatal(err)
-			}
-			renderTick = sdl.GetTicks64()
-		}
+	defer sim.Close()
+	for sim.Running {
+		sim.Update()
 	}
 
 	if *profile != "" {
@@ -92,82 +57,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-}
-
-func NewSDLScreen() (SDLScreen, error) {
-	window, err := sdl.CreateWindow("Hack", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 512, 256, sdl.WINDOW_SHOWN)
-	if err != nil {
-		return SDLScreen{}, err
-	}
-	renderer, err := sdl.CreateRenderer(window, 0, 0)
-	if err != nil {
-		return SDLScreen{}, err
-	}
-	return SDLScreen{
-		window:   window,
-		renderer: renderer,
-	}, nil
-}
-
-type SDLScreen struct {
-	window    *sdl.Window
-	renderer  *sdl.Renderer
-	presented uint64
-}
-
-func (s *SDLScreen) Clear() error {
-	if err := s.renderer.SetDrawColor(0, 0, 0, 255); err != nil {
-		return err
-	}
-	if err := s.renderer.Clear(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *SDLScreen) Draw(mem chip.Memory) error {
-	if err := s.Clear(); err != nil {
-		return err
-	}
-	if err := s.renderer.SetDrawColor(255, 255, 255, 255); err != nil {
-		return err
-	}
-	points := make([]sdl.Point, 0, ScreenMemoryMapLength)
-	for i := range ScreenMemoryMapLength {
-		val := mem.Out(chip.Inactive, chip.WrapUint16(uint16(ScreenMemoryMapBegin+i)).Address(), chip.NullWord)
-		points = append(points, s.points(i, val)...)
-	}
-	if len(points) == 0 {
-		// If there are no points to render then the renderer will return an error in DrawPoints. Even if that was not
-		// the case then it would just be wasteful to call the renderer if there is nothing to render.
-		return nil
-	}
-	if err := s.renderer.DrawPoints(points); err != nil {
-		return err
-	}
-	s.renderer.Present()
-	return nil
-}
-
-func (s *SDLScreen) points(position int, val chip.ReadonlyWord) []sdl.Point {
-	points := make([]sdl.Point, 0, 16)
-	row := position / 32
-	for i := range 16 {
-		px := val.Get(i)
-		col := ((position * 16) % 512) + i
-		if px == chip.Inactive {
-			continue
-		}
-		points = append(points, sdl.Point{
-			X: int32(col),
-			Y: int32(row),
-		})
-	}
-	return points
-}
-
-func (s *SDLScreen) Close() {
-	_ = s.window.Destroy()
 }
 
 func loadProgram(file string) (chip.ROM, error) {
