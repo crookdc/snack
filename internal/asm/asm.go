@@ -71,46 +71,66 @@ func Assemble(src string) ([][16]chip.Signal, error) {
 		}
 		switch v := ins.(type) {
 		case load:
-			var bin int
-			if v.value.variant == integer {
-				bin, err = strconv.Atoi(v.value.literal)
-			} else if v.value.variant == identifier {
-				bin = mem[v.value.literal]
-			} else {
-				return nil, fmt.Errorf("unexpected load token %+v", v.value)
+			bin, err := assembleLoadInstruction(mem, v)
+			if err != nil {
+				return nil, err
 			}
-			bin = bin & 0b0111_1111_1111_1111
-			program = append(program, chip.WrapUint16(uint16(bin)).Copy())
+			program = append(program, bin)
 		case compute:
-			bin, ok := computations[v.comp]
-			if !ok {
-				return nil, fmt.Errorf("unexpected computational segment %s", v.comp)
+			bin, err := assembleComputeInstruction(v)
+			if err != nil {
+				return nil, err
 			}
-			bin = bin << 6
-			if v.dest != nil {
-				dest := 0
-				for i := range v.dest.literal {
-					d, ok := destinations[v.dest.literal[i]]
-					if !ok {
-						return nil, fmt.Errorf("invalid destination %+v", v.dest)
-					}
-					dest = dest | d
-				}
-				bin = bin | (dest << 3)
-			}
-			if v.jump != nil {
-				jump, ok := jumps[v.jump.literal]
-				if !ok {
-					return nil, fmt.Errorf("invalid jump %+v", v.jump)
-				}
-				bin = bin | jump
-			}
-			bin = bin | 0b1110_0000_0000_0000
-			program = append(program, chip.WrapUint16(uint16(bin)).Copy())
+			program = append(program, bin)
 		default:
 		}
 	}
 	return program, nil
+}
+
+func assembleLoadInstruction(mem map[string]int, v load) ([16]chip.Signal, error) {
+	var bin int
+	var err error
+	if v.value.variant == integer {
+		bin, err = strconv.Atoi(v.value.literal)
+	} else if v.value.variant == identifier {
+		bin = mem[v.value.literal]
+	} else {
+		return [16]chip.Signal{}, fmt.Errorf("unexpected load token %+v", v.value)
+	}
+	if err != nil {
+		return [16]chip.Signal{}, err
+	}
+	bin = bin & 0b0111_1111_1111_1111
+	return chip.WrapUint16(uint16(bin)).Copy(), nil
+}
+
+func assembleComputeInstruction(v compute) ([16]chip.Signal, error) {
+	bin, ok := computations[v.comp]
+	if !ok {
+		return [16]chip.Signal{}, fmt.Errorf("unexpected computational segment %s", v.comp)
+	}
+	bin = bin << 6
+	if v.dest != nil {
+		dest := 0
+		for i := range v.dest.literal {
+			d, ok := destinations[v.dest.literal[i]]
+			if !ok {
+				return [16]chip.Signal{}, fmt.Errorf("invalid destination %+v", v.dest)
+			}
+			dest = dest | d
+		}
+		bin = bin | (dest << 3)
+	}
+	if v.jump != nil {
+		jump, ok := jumps[v.jump.literal]
+		if !ok {
+			return [16]chip.Signal{}, fmt.Errorf("invalid jump %+v", v.jump)
+		}
+		bin = bin | jump
+	}
+	bin = bin | 0b1110_0000_0000_0000
+	return chip.WrapUint16(uint16(bin)).Copy(), nil
 }
 
 func buildMemoryMap(src string) (map[string]int, error) {

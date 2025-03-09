@@ -170,6 +170,9 @@ func (p *parser) clear(tok *token) bool {
 	return tok.variant == linefeed
 }
 
+// want asserts that the next token supplied by the lexer is of a given variant. If the lexer returns a different
+// variant than the one expected then an error is returned. If the expected token does appear then it is returned to the
+// caller.
 func (p *parser) want(v variant) (token, error) {
 	tok, err := p.lexer.next()
 	if err != nil {

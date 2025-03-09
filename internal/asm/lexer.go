@@ -65,10 +65,13 @@ type lexer struct {
 	cursor int
 }
 
+// more returns true if the lexer has not yet reached the end of the source code
 func (l *lexer) more() bool {
 	return l.cursor < len(l.src)
 }
 
+// peek returns the next token but does not allow the cursor to proceed past said token, which means that the effect of
+// calling peek several times in a row is that identical values are returned each time
 func (l *lexer) peek() (token, error) {
 	prev := l.cursor
 	defer func() {
@@ -121,6 +124,7 @@ func (l *lexer) next() (token, error) {
 	}, nil
 }
 
+// seek places the cursor at the next instance of the supplied character, skipping anything before finding a match
 func (l *lexer) seek(c uint8) error {
 	for ; l.cursor < len(l.src) && l.src[l.cursor] != c; l.cursor++ {
 	}
