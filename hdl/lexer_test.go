@@ -146,7 +146,7 @@ func TestLexer_Next(t *testing.T) {
 					t.Errorf("expected variant '%v' but got '%v'", expected.variant, tok.variant)
 				}
 				if tok.literal != expected.literal {
-					t.Errorf("expected literal '%v' but got '%v'", expected.literal, tok.literal)
+					t.Errorf("expected Literal '%v' but got '%v'", expected.literal, tok.literal)
 				}
 				i++
 				if tok.variant == eof {

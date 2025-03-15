@@ -40,9 +40,6 @@ const (
 	rightCurlyBrace
 	leftBracket
 	rightBracket
-	lineComment
-	leftBlockComment
-	rightBlockComment
 	equals
 )
 
@@ -56,6 +53,14 @@ type token struct {
 type lexer struct {
 	src    string
 	cursor int
+}
+
+func (l *lexer) peek() (token, error) {
+	prev := l.cursor
+	defer func() {
+		l.cursor = prev
+	}()
+	return l.next()
 }
 
 func (l *lexer) next() (token, error) {
@@ -76,27 +81,10 @@ func (l *lexer) next() (token, error) {
 	switch char {
 	case '/':
 		if l.src[l.cursor+1] == '/' {
-			l.cursor += 2
-			return token{
-				variant: lineComment,
-				literal: "//",
-			}, nil
-		}
-		if l.src[l.cursor+1] == '*' {
-			l.cursor += 2
-			return token{
-				variant: leftBlockComment,
-				literal: "/*",
-			}, nil
-		}
-		return token{}, fmt.Errorf("invalid token '%s'", string(char))
-	case '*':
-		if l.src[l.cursor+1] == '/' {
-			l.cursor += 2
-			return token{
-				variant: rightBlockComment,
-				literal: "*/",
-			}, nil
+			if err := l.seek('\n'); err != nil {
+				return token{}, err
+			}
+			return l.next()
 		}
 		return token{}, fmt.Errorf("invalid token '%s'", string(char))
 	case '-':
@@ -107,7 +95,10 @@ func (l *lexer) next() (token, error) {
 				literal: "->",
 			}, nil
 		}
-		return token{}, fmt.Errorf("invalid token: '%s'", string(char))
+		return token{}, fmt.Errorf("invalid token '%s'", string(char))
+	}
+	if !alphanumerical(char) {
+		return token{}, fmt.Errorf("invalid token '%s'", string(char))
 	}
 	// Identifiers cannot start with a digit, therefore we must first check if the current character is an integer to
 	// decide whether to regard this as an integer Literal
