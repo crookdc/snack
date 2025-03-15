@@ -172,7 +172,11 @@ func (p *Parser) parseStatement() (Statement, error) {
 			expression: expression,
 		}, nil
 	case out:
-		panic("not implemented")
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		return OutStatement{expression: expr}, nil
 	default:
 		return nil, fmt.Errorf("unexpected token '%s'", tok.literal)
 	}
@@ -193,7 +197,14 @@ func (p *Parser) parseExpression() (Expression, error) {
 			literal: parsed,
 		}, nil
 	case identifier:
-		panic("not implemented")
+		next, err := p.lexer.peek()
+		if err != nil {
+			return nil, err
+		}
+		if next.variant != leftParenthesis {
+			return IdentifierExpression{literal: tok.literal}, nil
+		}
+		panic("call statement parsing not implemented")
 	default:
 		return nil, fmt.Errorf("unexpected token '%s'", tok.literal)
 	}
@@ -252,6 +263,10 @@ type OutStatement struct {
 	expression Expression
 }
 
+func (o OutStatement) Literal() string {
+	return fmt.Sprintf("out %s", o.expression.Literal())
+}
+
 type CallExpression struct {
 	name   string
 	inputs map[string]Expression
@@ -263,4 +278,12 @@ type IntegerExpression struct {
 
 func (i IntegerExpression) Literal() string {
 	return fmt.Sprintf("%d", i.literal)
+}
+
+type IdentifierExpression struct {
+	literal string
+}
+
+func (i IdentifierExpression) Literal() string {
+	return i.literal
 }

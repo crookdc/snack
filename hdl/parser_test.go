@@ -81,6 +81,37 @@ func TestChipParser_ParseChip(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			src: `
+			chip not16 (n: 16) -> (1, 1) {
+				set one = 1
+				out n
+				out 1
+			}`,
+			chip: Chip{
+				name: "not16",
+				inputs: map[string]int{
+					"n": 16,
+				},
+				outputs: []int{
+					1,
+					1,
+				},
+				body: []Statement{
+					SetStatement{
+						identifier: "one",
+						expression: IntegerExpression{literal: 1},
+					},
+					OutStatement{
+						expression: IdentifierExpression{literal: "n"},
+					},
+					OutStatement{
+						expression: IntegerExpression{literal: 1},
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.src, func(t *testing.T) {
